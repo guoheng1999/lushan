@@ -9,6 +9,7 @@ import edu.cuit.lushan.entity.Device;
 import edu.cuit.lushan.service.IDataFileService;
 import edu.cuit.lushan.service.IDeviceService;
 import edu.cuit.lushan.utils.ResponseMessage;
+import edu.cuit.lushan.utils.UserAgentUtil;
 import edu.cuit.lushan.vo.DataFileVO;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ public class DataFileController {
     @Autowired
     IDeviceService deviceService;
     @Autowired
-    JwtUtil jwtUtil;
+    UserAgentUtil userAgentUtil;
 
     @ApiOperation(value = "获取所有数据文件信息", tags = {"数据文件管理"})
     @GetMapping("/")
@@ -129,7 +130,8 @@ public class DataFileController {
             return ResponseMessage.errorMsg(2500, "The file name cannot be modified!");
         }
         BeanUtil.copyProperties(dataFileVO, myDataFile, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true).setIgnoreProperties("fileName"));
-        myDataFile.setModifyUserId(getOperateUserId(request));
+        myDataFile.setModifyUserId(userAgentUtil.getUserId(request));
+
         if (dataFileService.updateById(myDataFile)) {
             return ResponseMessage.success(dataFileVO);
         } else {
@@ -144,18 +146,14 @@ public class DataFileController {
         if (dataFile == null){
             return ResponseMessage.errorMsg(2404, "Data file not found!");
         }
-        dataFile.setModifyUserId(getOperateUserId(request));
+        dataFile.setModifyUserId(userAgentUtil.getUserId(request));
         dataFileService.save(dataFile);
+
         if (dataFileService.removeById(fileId)) {
             return ResponseMessage.success(fileId);
         }else {
             return ResponseMessage.errorMsg(2500, "Server error!", fileId);
         }
-    }
-    private String getOperateUserId(HttpServletRequest request){
-        return jwtUtil.getUserId(
-                request.getHeader("Authorization")
-                        .replace("Bearer ", ""));
     }
 }
 

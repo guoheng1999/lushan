@@ -1,11 +1,13 @@
 package edu.cuit.lushan.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import edu.cuit.lushan.annotation.DataLog;
 import edu.cuit.lushan.entity.User;
 import edu.cuit.lushan.service.IUserService;
 import edu.cuit.lushan.utils.ResponseMessage;
 import edu.cuit.lushan.utils.UserAgentUtil;
 import edu.cuit.lushan.vo.LoginVO;
+import edu.cuit.lushan.vo.RegisterVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +45,11 @@ public class AccessHandler {
     @ApiOperation(value = "用户注册接口", tags = {"权限获取管理"})
     @PostMapping("/register")
     @DataLog
-    public ResponseMessage register(@RequestBody User user) {
-
+    public ResponseMessage register(@RequestBody RegisterVO registerVO) {
+        if (registerVO == null || BeanUtil.hasNullField(registerVO)){
+            return ResponseMessage.errorMsg(2500, "User information cannot be null!", registerVO);
+        }
+        User user = User.buildByVO(registerVO);
         userService.save(user);
         user = userService.selectByEmail(user.getEmail());
         user.setModifyUserId(user.getId());

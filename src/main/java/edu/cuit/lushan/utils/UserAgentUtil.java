@@ -74,7 +74,7 @@ public class UserAgentUtil {
     }
 
     public String getToken(HttpServletRequest request){
-        return request.getHeader("Authorization").replace("Beraer ","");
+        return request.getHeader("Authorization").replace("Bearer ","");
     }
 
     public Integer getUserId(HttpServletRequest request){

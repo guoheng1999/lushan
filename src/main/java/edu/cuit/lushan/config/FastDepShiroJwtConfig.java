@@ -44,16 +44,14 @@ public class FastDepShiroJwtConfig extends FastDepShiroJwtAuthorization {
     }
 
     private void dealGetUserRole(User user, SimpleAuthorizationInfo simpleAuthorizationInfo){
-        RoleEnum role = null;
         switch (user.getRoleId()) {
             case 2:
-                role =  RoleEnum.ADMIN;
+                simpleAuthorizationInfo.addRole(RoleEnum.ADMIN.toString());
             case 1:
-                role =  RoleEnum.MANAGER;
+                simpleAuthorizationInfo.addRole(RoleEnum.MANAGER.toString());
             case 0:
-                role =  RoleEnum.USER;
+                simpleAuthorizationInfo.addRole(RoleEnum.USER.toString());
         }
-        simpleAuthorizationInfo.addRole(role.toString());
     }
 
     /***

@@ -1,7 +1,6 @@
 package edu.cuit.lushan.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
 
 import java.time.LocalDateTime;
 import java.io.Serializable;
@@ -34,11 +33,20 @@ public class UserProof implements Serializable {
 
     private String filePathName;
 
+    /**
+     * 修改时间
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime modifyTime;
 
     private Integer modifyUserId;
 
-    private String isDelete;
+    /**
+     * 逻辑删除
+     */
+    @TableLogic(value = "0", delval = "1")
+    @TableField(select = false, fill = FieldFill.INSERT)
+    private Integer isDelete;
 
-
+    private String fileType;
 }

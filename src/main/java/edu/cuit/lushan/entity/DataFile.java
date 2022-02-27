@@ -51,7 +51,7 @@ public class DataFile implements Serializable {
     /**
      * 修改人ID
      */
-    private String modifyUserId;
+    private Integer modifyUserId;
 
     /**
      * 文件类型

@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserProofVO {
     private Integer userId;
-    private String proofFilePathName;
+    private String filePathName;
+    private String fileType;
 }

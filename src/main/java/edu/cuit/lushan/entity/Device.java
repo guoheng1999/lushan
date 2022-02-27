@@ -42,7 +42,7 @@ public class Device implements Serializable {
      * 逻辑删除
      */
     @TableLogic(value = "0", delval = "1")
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(fill = FieldFill.INSERT)
     private Integer isDelete;
 
 

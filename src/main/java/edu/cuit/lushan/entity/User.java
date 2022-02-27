@@ -1,6 +1,7 @@
 package edu.cuit.lushan.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import edu.cuit.lushan.vo.RegisterVO;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -91,4 +92,15 @@ public class User implements Serializable {
      */
     private Integer modifyUserId;
 
+    public static User buildByVO(RegisterVO registerVO){
+        User user = User.builder()
+                .email(registerVO.getEmail())
+                .organization(registerVO.getOrganization())
+                .password(registerVO.getPassword())
+                .phone(registerVO.getPhone())
+                .userEdu(registerVO.getUserEdu())
+                .realName(registerVO.getRealName())
+                .build();
+        return user;
+    }
 }

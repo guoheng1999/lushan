@@ -21,7 +21,7 @@ server:
 fastdep:
   shiro-jwt:
     secret: "6Dx8SIuaHXJYnpsG18SSpjPs50lZcT52" # jwt秘钥
-#    expireTime: 7200000 # token有效期
+    expireTime: 2592000000 # token有效期
 #    prefix: "Bearer "  # token校验时的前缀
 #    signPrefix: "Bearer " # token生成签名的前缀
 #    header: "Authorization" # token校验时的header头
@@ -31,5 +31,5 @@ fastdep:
 #    unauthorizedUrl:
 #    filterChainDefinitions:
 lushan:
-  data-root: D:/lushan_server/upload/data
-  proof-root: D:/lushan_server/upload/user_proof
+  data-root: E:/lushan_server/upload/data
+  proof-root: E:/lushan_server/upload/user_proof

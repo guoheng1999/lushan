@@ -7,9 +7,9 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
 
-//@RestControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
-    //    @ExceptionHandler
+    @ExceptionHandler
     public ResponseMessage defaultErrorHandler(HttpServletRequest request, Exception e) {
 
         ResponseMessage result;
