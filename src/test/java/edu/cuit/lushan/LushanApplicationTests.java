@@ -17,7 +17,6 @@ class LushanApplicationTests {
     @Test
     void testHutool(){
         UserInfoVO releaseVersion = new UserInfoVO();
-        releaseVersion.setHeadImg("found");
         releaseVersion.setEmail("sss");
         User old = new User();
         old.setId(1);

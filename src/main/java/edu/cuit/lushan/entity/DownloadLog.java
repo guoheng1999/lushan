@@ -49,7 +49,7 @@ public class DownloadLog implements Serializable {
     /**
      * 下载的文件的ID
      */
-    private String dowmloadFileId;
+    private String downloadFileName;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime modifyTime;

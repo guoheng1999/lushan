@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class DeviceVO {
+public class DeviceInfoVO {
     private String deviceName;
     private String description;
     private Integer id;

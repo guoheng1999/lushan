@@ -1,7 +1,11 @@
 package edu.cuit.lushan.utils;
 
 import com.louislivi.fastdep.shirojwt.jwt.JwtUtil;
+import edu.cuit.lushan.entity.User;
+import edu.cuit.lushan.service.IUserService;
+import org.apache.shiro.authz.AuthorizationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -9,9 +13,14 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 
 @Component
+@Scope("prototype")
 public class UserAgentUtil {
     @Autowired
     JwtUtil jwtUtil;
+    @Autowired
+    IUserService userService;
+
+
 
     public String sign(Integer userId){
         return jwtUtil.sign(userId.toString());
@@ -79,5 +88,32 @@ public class UserAgentUtil {
 
     public Integer getUserId(HttpServletRequest request){
         return Integer.valueOf(jwtUtil.getUserId(getToken(request)));
+    }
+
+    public boolean verifyUser(User user){
+        if (user != null){
+            if (user.getAccountStatus() == null){
+                throw new AuthorizationException("The current account is abnormal!");
+            }else {
+                return true;
+            }
+        }else {
+            throw new AuthorizationException("The current account is not found!");
+        }
+    }
+
+    public boolean verifyEditorPermission(Integer userId,User user){
+        User operateUser = userService.getById(userId);
+        verifyUser(user);
+        switch (operateUser.getRoleId()) {
+            case 2:
+            case 1:
+                return true;
+            case 0:
+                if (operateUser.getId() == user.getId()){
+                    return true;
+                }
+        }
+        return false;
     }
 }

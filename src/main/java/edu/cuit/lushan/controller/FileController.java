@@ -1,7 +1,5 @@
 package edu.cuit.lushan.controller;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.lang.UUID;
 import edu.cuit.lushan.config.LushanConfig;
@@ -19,6 +17,7 @@ import edu.cuit.lushan.vo.UserProofVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,7 +52,21 @@ public class FileController {
     @RequiresRoles("MANAGER")
     public ResponseMessage uploadData(MultipartFile multipartFile, HttpServletRequest request) throws Exception {
         FileVO fileVO = getFileVO(multipartFile, lushanConfig.getDataRoot(), false);
-        return ResponseMessage.success(fileVO);
+
+        DataFile dataFile = DataFile.builder()
+                .dataName(fileVO.getDataName())
+                .fileName(fileVO.getFileName())
+                .fileType(fileVO.getFileType())
+                .modifyUserId(userAgentUtil.getUserId(request))
+                .deviceId(request.getIntHeader("deviceId"))
+                .build();
+
+        if (dataFileService.save(dataFile)) {
+            return ResponseMessage.success(fileVO);
+        }else {
+            return ResponseMessage.errorMsg(2500, "Server Error!", fileVO              );
+        }
+
     }
 
     @PostMapping("/upload/user/proof")
@@ -61,12 +74,12 @@ public class FileController {
         FileVO fileVO = getFileVO(multipartFile, lushanConfig.getProofRoot(), true);
         UserProof userProof = new UserProof();
         userProof.setUserId(userAgentUtil.getUserId(request))
-                .setFilePathName(fileVO.getFileName())
+                .setFileName(fileVO.getFileName())
                 .setModifyUserId(userAgentUtil.getUserId(request))
                 .setFileType(fileVO.getFileType());
         if (userProofService.save(userProof)) {
             UserProofVO userProofVO = UserProofVO.builder()
-                    .filePathName(userProof.getFilePathName())
+                    .filePathName(userProof.getFileName())
                     .userId(userProof.getUserId())
                     .fileType(userProof.getFileType())
                     .build();
@@ -77,21 +90,17 @@ public class FileController {
     }
 
 
-    @PostMapping("/download/data")
+    @GetMapping("/download/data")
     public void downloadData(String fileName, HttpServletResponse response, HttpServletRequest request) {
         try {
-
-            DataFile dataFile = dataFileService.getOneByDataFileName(fileName.substring(0, fileName.lastIndexOf(".")));
+            DataFile dataFile = dataFileService.getOneByDataFileName(fileName);
             if (dataFile == null){
+                log.info("not found");
                 return;
             }
             // path是指想要下载的文件的路径
-            File file = new File(lushanConfig.getDataRoot(), fileName);
-            // 获取文件名
-            String filename = file.getName();
-            // 获取文件后缀名
-            String ext = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
-
+            File file = new File(lushanConfig.getDataRoot(),
+                    dataFile.getFileName() + "." +dataFile.getFileType());
             // 将文件写入输入流
             FileInputStream fileInputStream = new FileInputStream(file);
             InputStream fis = new BufferedInputStream(fileInputStream);
@@ -106,13 +115,14 @@ public class FileController {
             //Content-Disposition的作用：告知浏览器以何种方式显示响应返回的文件，用浏览器打开还是以附件的形式下载到本地保存
             //attachment表示以附件方式下载 inline表示在线打开 "Content-Disposition: inline; filename=文件名.mp3"
             // filename表示文件的默认名称，因为网络传输只支持URL编码的相关支付，因此需要将文件名URL编码后进行传输,前端收到后需要反编码才能获取到真正的名称
-            response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(filename, "UTF-8"));
+            response.addHeader("Content-Disposition",
+                    "attachment;filename=" + URLEncoder.encode(dataFile.getDataName() + "." +dataFile.getFileType(), "UTF-8"));
             // 告知浏览器文件的大小
             response.addHeader("Content-Length", "" + file.length());
             OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());
             response.setContentType("application/octet-stream");
             DownloadLog downloadLog = DownloadLog.builder()
-                    .dowmloadFileId(dataFile.getId().toString())
+                    .downloadFileName(dataFile.getFileName())
                     .downloadIp(userAgentUtil.getIpAddress(request))
                     .downloadTime(LocalDateTimeUtil.of(new Date()))
                     .downloadUserId(userAgentUtil.getUserId(request))
@@ -125,21 +135,17 @@ public class FileController {
         }
     }
 
-    @PostMapping("/download/user/proof")
+    @GetMapping("/download/user/proof")
     public void downloadUserProof(String fileName, HttpServletResponse response, HttpServletRequest request) {
         try {
 
-            DataFile dataFile = dataFileService.getOneByDataFileName(fileName.substring(0, fileName.lastIndexOf(".")));
-            if (dataFile == null){
+            UserProof userProof = userProofService.getByUserProofFileName(fileName);
+            if (userProof == null){
                 return;
             }
             // path是指想要下载的文件的路径
-            File file = new File(lushanConfig.getDataRoot(), fileName);
-            // 获取文件名
-            String filename = file.getName();
-            // 获取文件后缀名
-            String ext = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
-
+            String fileFullName = userProof.getFileName() + "." + userProof.getFileType();
+            File file = new File(lushanConfig.getProofRoot(), fileFullName);
             // 将文件写入输入流
             FileInputStream fileInputStream = new FileInputStream(file);
             InputStream fis = new BufferedInputStream(fileInputStream);
@@ -154,13 +160,13 @@ public class FileController {
             //Content-Disposition的作用：告知浏览器以何种方式显示响应返回的文件，用浏览器打开还是以附件的形式下载到本地保存
             //attachment表示以附件方式下载 inline表示在线打开 "Content-Disposition: inline; filename=文件名.mp3"
             // filename表示文件的默认名称，因为网络传输只支持URL编码的相关支付，因此需要将文件名URL编码后进行传输,前端收到后需要反编码才能获取到真正的名称
-            response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(filename, "UTF-8"));
+            response.addHeader("Content-Disposition", "inline;filename=" + URLEncoder.encode(fileFullName, "UTF-8"));
             // 告知浏览器文件的大小
             response.addHeader("Content-Length", "" + file.length());
             OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());
             response.setContentType("application/octet-stream");
             DownloadLog downloadLog = DownloadLog.builder()
-                    .dowmloadFileId(dataFile.getId().toString())
+                    .downloadFileName(userProof.getFileName())
                     .downloadIp(userAgentUtil.getIpAddress(request))
                     .downloadTime(LocalDateTimeUtil.of(new Date()))
                     .downloadUserId(userAgentUtil.getUserId(request))

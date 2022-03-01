@@ -3,6 +3,9 @@ package edu.cuit.lushan.controller;
 import cn.hutool.core.bean.BeanUtil;
 import edu.cuit.lushan.annotation.DataLog;
 import edu.cuit.lushan.entity.User;
+import edu.cuit.lushan.enums.UserVOEnum;
+import edu.cuit.lushan.factory.AbstractFactory;
+import edu.cuit.lushan.factory.FactoryProducer;
 import edu.cuit.lushan.service.IUserService;
 import edu.cuit.lushan.utils.ResponseMessage;
 import edu.cuit.lushan.utils.UserAgentUtil;
@@ -24,6 +27,8 @@ public class AccessHandler {
     IUserService userService;
     @Autowired
     UserAgentUtil userAgentUtil;
+
+    AbstractFactory<User> abstractFactory = FactoryProducer.getFactory(FactoryProducer.FactoryName.USER);
     @DataLog
     @ApiOperation(value = "用户登录接口", tags = {"权限获取管理"})
     @PostMapping("/login")
@@ -39,7 +44,7 @@ public class AccessHandler {
             return ResponseMessage.successCodeMsgData(2404, "User is not found or password is not validated!", loginVO);
         }
         response.addHeader("token", userAgentUtil.sign(user.getId()));
-        return ResponseMessage.success(user);
+        return ResponseMessage.success(abstractFactory.buildVOByEntity(user, UserVOEnum.USER_INFO.name()));
     }
 
     @ApiOperation(value = "用户注册接口", tags = {"权限获取管理"})
@@ -49,7 +54,8 @@ public class AccessHandler {
         if (registerVO == null || BeanUtil.hasNullField(registerVO)){
             return ResponseMessage.errorMsg(2500, "User information cannot be null!", registerVO);
         }
-        User user = User.buildByVO(registerVO);
+        AbstractFactory<User> abstractFactory = FactoryProducer.getFactory(FactoryProducer.FactoryName.USER);
+        User user = abstractFactory.buildEntityByVO(new User(), registerVO);
         userService.save(user);
         user = userService.selectByEmail(user.getEmail());
         user.setModifyUserId(user.getId());

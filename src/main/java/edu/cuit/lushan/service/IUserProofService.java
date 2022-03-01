@@ -12,5 +12,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2022-02-26
  */
 public interface IUserProofService extends IService<UserProof> {
-
+    UserProof getByUserProofFileName(String fileName);
+    UserProof getByUserId(String userId);
 }

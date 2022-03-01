@@ -7,7 +7,7 @@ import edu.cuit.lushan.entity.Device;
 import edu.cuit.lushan.service.IDeviceService;
 import edu.cuit.lushan.utils.ResponseMessage;
 import edu.cuit.lushan.utils.UserAgentUtil;
-import edu.cuit.lushan.vo.DeviceVO;
+import edu.cuit.lushan.vo.DeviceInfoVO;
 import io.swagger.annotations.ApiOperation;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ public class DeviceController {
         List result = new LinkedList();
         deviceService.list().forEach((item)->{
             result.add(
-                    DeviceVO.builder()
+                    DeviceInfoVO.builder()
                             .deviceName(item.getDeviceName())
                             .description(item.getDescription())
                             .id(item.getId())
@@ -57,7 +57,7 @@ public class DeviceController {
         if (device == null){
             return ResponseMessage.successCodeMsgData(2404, "Device not found!", deviceId);
         }
-        DeviceVO deviceVO = DeviceVO.builder()
+        DeviceInfoVO deviceVO = DeviceInfoVO.builder()
                 .description(device.getDescription())
                 .deviceName(device.getDeviceName())
                 .id(device.getId())
@@ -67,7 +67,7 @@ public class DeviceController {
 
     @ApiOperation(value = "添加设备信息", tags = {"设备管理"})
     @PostMapping("/")
-    public ResponseMessage register(@RequestBody DeviceVO deviceVO, HttpServletRequest request) {
+    public ResponseMessage register(@RequestBody DeviceInfoVO deviceVO, HttpServletRequest request) {
         Device device = Device.builder().deviceName(deviceVO.getDeviceName())
                 .description(deviceVO.getDescription())
                 .modifyUserId(userAgentUtil.getUserId(request))
@@ -81,7 +81,7 @@ public class DeviceController {
 
     @ApiOperation(value = "更改设备信息", tags = {"设备管理"})
     @PutMapping("/")
-    public ResponseMessage update(@RequestBody DeviceVO deviceVO) {
+    public ResponseMessage update(@RequestBody DeviceInfoVO deviceVO) {
         Device device = deviceService.getById(deviceVO.getId());
         if (device == null) {
             return ResponseMessage.errorMsg(2404, "Device not found!", deviceVO);

@@ -31,7 +31,7 @@ public class UserProof implements Serializable {
 
     private Integer userId;
 
-    private String filePathName;
+    private String fileName;
 
     /**
      * 修改时间

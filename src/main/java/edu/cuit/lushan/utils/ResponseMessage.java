@@ -84,5 +84,51 @@ public class ResponseMessage implements Serializable {
         return new ResponseMessage(false, code, msg, data);
     }
 
+    /**
+     * 系统未知错误响应错误(数据)
+     *
+     * @return
+     */
+    public static ResponseMessage serverError(Object data) {
+        return new ResponseMessage(false, 2500, "Server Error!", data);
+    }
+
+    /**
+     * NotFound(数据)
+     *
+     * @return
+     */
+    public static ResponseMessage notFound(Object data) {
+        return new ResponseMessage(false, 2404, "Current data not found!", data);
+    }
+
+    /**
+     * Null Error(数据)
+     *
+     * @return
+     */
+    public static ResponseMessage nullError() {
+        return new ResponseMessage(false, 2404, "Request data cannot be empty!", null);
+    }
+
+    /**
+     * Null Error(数据)
+     *
+     * @return
+     */
+    public static ResponseMessage nullError(Object data) {
+        return new ResponseMessage(false, 2404, "Request data cannot be empty!", data);
+    }
+
+    /**
+     * Exists Error(数据)
+     *
+     * @return
+     */
+    public static ResponseMessage existsError(Object data) {
+        return new ResponseMessage(false, 2500, "Current data already exists!", data);
+    }
+
+
 
 }
