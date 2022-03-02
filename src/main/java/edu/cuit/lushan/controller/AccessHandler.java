@@ -14,6 +14,7 @@ import edu.cuit.lushan.vo.RegisterVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @ApiModel(value = "用户登陆注册中心", description = "用户登录")
+@CrossOrigin
 public class AccessHandler {
     @Autowired
     IUserService userService;
