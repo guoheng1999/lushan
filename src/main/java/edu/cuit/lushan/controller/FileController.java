@@ -17,10 +17,7 @@ import edu.cuit.lushan.vo.UserProofVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +30,7 @@ import java.util.Date;
 @Slf4j
 @RequestMapping("/file")
 @RequiresRoles({"USER"})
+@CrossOrigin
 public class FileController {
 
     @Autowired

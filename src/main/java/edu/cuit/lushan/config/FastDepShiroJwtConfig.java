@@ -8,11 +8,15 @@ import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.*;
 
 @Component
+@RestControllerAdvice
+@ConditionalOnMissingBean(edu.cuit.lushan.shiro.fastdep.FastDepShiroJwtAuthorization.class)
 public class FastDepShiroJwtConfig extends FastDepShiroJwtAuthorization {
 
     @Autowired
@@ -36,6 +40,7 @@ public class FastDepShiroJwtConfig extends FastDepShiroJwtAuthorization {
 
     @Override
     public void shiroFilterFactoryBean(ShiroFilterFactoryBean factoryBean) {
+
         Map<String, String> filterChainMap = new LinkedHashMap<>();
         filterChainMap.put("/login", "anon");
         filterChainMap.put("/register", "anon");

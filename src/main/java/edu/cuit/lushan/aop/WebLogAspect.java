@@ -1,11 +1,13 @@
 package edu.cuit.lushan.aop;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.louislivi.fastdep.shirojwt.jwt.JwtUtil;
 import edu.cuit.lushan.entity.SysLog;
 import edu.cuit.lushan.service.ISysLogService;
 import edu.cuit.lushan.utils.ResponseMessage;
+import edu.cuit.lushan.utils.UserAgentUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -23,7 +25,7 @@ import java.util.Date;
 @Slf4j
 public class WebLogAspect {
     @Autowired
-    JwtUtil jwtUtil;
+    UserAgentUtil userAgentUtil;
     @Autowired
     ISysLogService sysLogService;
 
@@ -37,10 +39,6 @@ public class WebLogAspect {
         // 接收到请求，记录请求内容
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
-        String authorizationToken = request.getHeader("Authorization");
-        if (StringUtils.isNotEmpty(authorizationToken)) {
-            authorizationToken = authorizationToken.split(" ")[1];
-        }
         // 记录下请求内容
         String requestURL = request.getRequestURL().toString();
         String httpMethod = request.getMethod();
@@ -50,7 +48,7 @@ public class WebLogAspect {
         String ip = getIP(request);
         ResponseMessage responseMessage = ret == null?ResponseMessage.builder().build():(ResponseMessage) ret;
 
-        String userId = jwtUtil.getUserId(authorizationToken);
+        String userId = userAgentUtil.getUserId(request)==null? null :userAgentUtil.getUserId(request).toString();
         SysLog sysLog = SysLog.builder().ip(ip)
                 .methodName(classMethod)
                 .requestParam(param)

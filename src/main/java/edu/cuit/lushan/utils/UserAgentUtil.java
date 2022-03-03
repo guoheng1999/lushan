@@ -83,11 +83,11 @@ public class UserAgentUtil {
     }
 
     public String getToken(HttpServletRequest request){
-        return request.getHeader("Authorization").replace("Bearer ","");
+        return request.getHeader("Authorization") == null? null:request.getHeader("Authorization").replace("Bearer ","");
     }
 
     public Integer getUserId(HttpServletRequest request){
-        return Integer.valueOf(jwtUtil.getUserId(getToken(request)));
+        return jwtUtil.getUserId(getToken(request)) == null ? null: Integer.valueOf(jwtUtil.getUserId(getToken(request)));
     }
 
     public boolean verifyUser(User user){

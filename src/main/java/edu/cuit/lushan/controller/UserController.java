@@ -37,7 +37,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 @ApiModel(value = "用户管理", description = "对用户的增删改查操作")
-@RequiresRoles({"USER"})
 public class UserController {
 
     @Autowired
@@ -47,7 +46,8 @@ public class UserController {
     AbstractFactory<User> abstractFactory = FactoryProducer.getFactory(FactoryProducer.FactoryName.USER);
 
     @ApiOperation(value = "获取所有用户", tags = {"用户管理"})
-    @GetMapping("/")
+    @GetMapping("/all")
+    @CrossOrigin
     public ResponseMessage getAll() {
         List list = new ArrayList();
         userService.list().forEach(
@@ -57,7 +57,8 @@ public class UserController {
     }
 
     @ApiOperation(value = "获取一个用户的信息", tags = {"用户管理"})
-    @GetMapping("/{userId}")
+    @GetMapping("/one")
+    @CrossOrigin
     public ResponseMessage getOne(@PathVariable String userId) {
         User user = userService.getById(userId);
         if (user == null){
@@ -83,7 +84,7 @@ public class UserController {
         User user = abstractFactory.buildEntityByVO(new User(), registerVO);
         user.setModifyUserId(userAgentUtil.getUserId(request));
         if (userService.save(user)) {
-            return ResponseMessage.success(user);
+            return ResponseMessage.success(abstractFactory.buildVOByEntity(user, UserVOEnum.USER_INFO.name()));
         }
         return ResponseMessage.serverError(user);
     }
@@ -202,9 +203,9 @@ public class UserController {
         if (user == null) {
             return ResponseMessage.notFound(loginVO);
         }
-        // 添加Token至Headers
-        response.addHeader("token", userAgentUtil.sign(user.getId()));
-        return ResponseMessage.success(abstractFactory.buildVOByEntity(user, UserVOEnum.USER_INFO.name()));
+        // 添加Token
+        loginVO.setToken(userAgentUtil.sign(user.getId()));
+        return ResponseMessage.success(loginVO);
     }
 
     /***

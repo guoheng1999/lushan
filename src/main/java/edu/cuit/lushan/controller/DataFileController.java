@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/dataFile")
 @Slf4j
 @RequiresRoles({"USER"})
+@CrossOrigin
 public class DataFileController {
 
     @Autowired

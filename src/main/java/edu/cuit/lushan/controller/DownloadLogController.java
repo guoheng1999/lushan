@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/downloadLog")
 @RequiresRoles({"USER"})
+@CrossOrigin
 public class DownloadLogController {
 
     @Autowired

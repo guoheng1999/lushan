@@ -24,8 +24,6 @@ import java.util.Map;
  *
  * @author : louislivi
  */
-@RestControllerAdvice
-@ConditionalOnMissingBean(FastDepShiroJwtAuthorization.class)
 public class FastDepShiroJwtAuthorization implements FastDepShiroJwtAuthorizationImp {
 
     /**

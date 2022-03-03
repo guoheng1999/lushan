@@ -45,8 +45,8 @@ public class AccessHandler {
         if (user == null) {
             return ResponseMessage.successCodeMsgData(2404, "User is not found or password is not validated!", loginVO);
         }
-        response.addHeader("token", userAgentUtil.sign(user.getId()));
-        return ResponseMessage.success(abstractFactory.buildVOByEntity(user, UserVOEnum.USER_INFO.name()));
+        loginVO.setToken(userAgentUtil.sign(user.getId()));
+        return ResponseMessage.success(loginVO);
     }
 
     @ApiOperation(value = "用户注册接口", tags = {"权限获取管理"})

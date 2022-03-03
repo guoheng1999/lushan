@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/sysLog")
 @RequiresRoles({"USER"})
+@CrossOrigin
 public class SysLogController {
 
     @Autowired

@@ -28,6 +28,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/device")
 @RequiresRoles({"USER"})
+@CrossOrigin
 public class DeviceController {
 
     @Autowired
