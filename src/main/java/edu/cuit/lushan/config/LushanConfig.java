@@ -10,4 +10,5 @@ import org.springframework.stereotype.Component;
 public class LushanConfig {
     private String dataRoot;
     private String proofRoot;
+    private String secret;
 }

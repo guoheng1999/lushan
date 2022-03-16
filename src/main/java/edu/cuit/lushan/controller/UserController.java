@@ -5,7 +5,9 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.StrUtil;
 import edu.cuit.lushan.annotation.DataLog;
+import edu.cuit.lushan.annotation.RequireRoles;
 import edu.cuit.lushan.entity.User;
+import edu.cuit.lushan.enums.RoleEnum;
 import edu.cuit.lushan.enums.UserVOEnum;
 import edu.cuit.lushan.factory.AbstractFactory;
 import edu.cuit.lushan.factory.FactoryProducer;
@@ -16,8 +18,6 @@ import edu.cuit.lushan.utils.UserAgentUtil;
 import edu.cuit.lushan.vo.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
-import org.apache.shiro.authz.annotation.Logical;
-import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +48,7 @@ public class UserController {
     @ApiOperation(value = "获取所有用户", tags = {"用户管理"})
     @GetMapping("/all")
     @CrossOrigin
+    @RequireRoles(value = RoleEnum.MANAGER)
     public ResponseMessage getAll() {
         List list = new ArrayList();
         userService.list().forEach(
@@ -72,7 +73,6 @@ public class UserController {
     @ApiOperation(value = "添加用户", tags = {"用户管理"})
     @PostMapping("/")
     @DataLog
-    @RequiresRoles(value = {"ADMIN"},logical = Logical.OR)
     public ResponseMessage add(@RequestBody RegisterVO registerVO,
                                HttpServletRequest request) {
         if (registerVO == null || BeanUtil.hasNullField(registerVO)){

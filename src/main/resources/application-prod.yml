@@ -18,18 +18,7 @@ server:
   port: 8080
   servlet:
     context-path: /lushan
-fastdep:
-  shiro-jwt:
-    secret: "6Dx8SIuaHXJYnpsG18SSpjPs50lZcT52" # jwt秘钥
-#    expireTime: 7200000 # token有效期
-#    prefix: "Bearer "  # token校验时的前缀
-#    signPrefix: "Bearer " # token生成签名的前缀
-#    header: "Authorization" # token校验时的header头
-#    以下对应为shiro配置参数，无特殊需求无需配置
-#    loginUrl:
-#    successUrl:
-#    unauthorizedUrl:
-#    filterChainDefinitions:
+
 lushan:
   data-root: /home/lushan_server/upload/data
   proof-root: /lushan_server/upload/user_proof

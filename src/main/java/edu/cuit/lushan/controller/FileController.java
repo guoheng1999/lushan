@@ -2,6 +2,7 @@ package edu.cuit.lushan.controller;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.lang.UUID;
+import edu.cuit.lushan.annotation.DataLog;
 import edu.cuit.lushan.config.LushanConfig;
 import edu.cuit.lushan.entity.DataFile;
 import edu.cuit.lushan.entity.DownloadLog;
@@ -15,7 +16,6 @@ import edu.cuit.lushan.utils.UserAgentUtil;
 import edu.cuit.lushan.vo.FileVO;
 import edu.cuit.lushan.vo.UserProofVO;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,7 +29,6 @@ import java.util.Date;
 @RestController
 @Slf4j
 @RequestMapping("/file")
-@RequiresRoles({"USER"})
 @CrossOrigin
 public class FileController {
 
@@ -47,7 +46,7 @@ public class FileController {
     FileUtil fileUtil;
 
     @PostMapping("/upload/data")
-    @RequiresRoles("MANAGER")
+    @DataLog
     public ResponseMessage uploadData(MultipartFile multipartFile, HttpServletRequest request) throws Exception {
         FileVO fileVO = getFileVO(multipartFile, lushanConfig.getDataRoot(), false);
 
@@ -68,6 +67,7 @@ public class FileController {
     }
 
     @PostMapping("/upload/user/proof")
+    @DataLog
     public ResponseMessage uploadUserProof(MultipartFile multipartFile, HttpServletRequest request) throws Exception {
         FileVO fileVO = getFileVO(multipartFile, lushanConfig.getProofRoot(), true);
         UserProof userProof = new UserProof();
@@ -89,6 +89,7 @@ public class FileController {
 
 
     @GetMapping("/download/data")
+    @DataLog
     public void downloadData(String fileName, HttpServletResponse response, HttpServletRequest request) {
         try {
             DataFile dataFile = dataFileService.getOneByDataFileName(fileName);
@@ -134,6 +135,7 @@ public class FileController {
     }
 
     @GetMapping("/download/user/proof")
+    @DataLog
     public void downloadUserProof(String fileName, HttpServletResponse response, HttpServletRequest request) {
         try {
 

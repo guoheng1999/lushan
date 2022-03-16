@@ -5,7 +5,6 @@ import edu.cuit.lushan.entity.SysLog;
 import edu.cuit.lushan.service.ISysLogService;
 import edu.cuit.lushan.utils.ResponseMessage;
 import io.swagger.annotations.ApiOperation;
-import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/sysLog")
-@RequiresRoles({"USER"})
 @CrossOrigin
 public class SysLogController {
 

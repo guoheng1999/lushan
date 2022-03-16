@@ -17,18 +17,17 @@
         <java.version>1.8</java.version>
     </properties>
     <dependencies>
-        <!-- shiro-jwt-->
-        <dependency>
-            <groupId>com.louislivi.fastdep</groupId>
-            <artifactId>fastdep-shiro-jwt</artifactId>
-            <version>1.0.7</version>
-        </dependency>
         <!--引用AOP-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
+        <!--redis-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
         <!--获取请求信息 -->
         <dependency>
             <groupId>eu.bitwalker</groupId>
@@ -98,6 +97,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+        <!-- 阿里fastjson包JSON转换-->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.47</version>
         </dependency>
 
     </dependencies>

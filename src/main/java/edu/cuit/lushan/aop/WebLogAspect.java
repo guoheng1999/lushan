@@ -3,7 +3,6 @@ package edu.cuit.lushan.aop;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.louislivi.fastdep.shirojwt.jwt.JwtUtil;
 import edu.cuit.lushan.entity.SysLog;
 import edu.cuit.lushan.service.ISysLogService;
 import edu.cuit.lushan.utils.ResponseMessage;
@@ -33,9 +32,9 @@ public class WebLogAspect {
     public void logPointCut() {
     }
 
-    //    @Before("logPointCut()")
+//    @Before("logPointCut()")
     @AfterReturning(returning = "ret", pointcut = "logPointCut()")
-    public void afterReturning(JoinPoint joinPoint, Object ret) throws Throwable {
+    public void afterReturning(JoinPoint joinPoint, Object ret) {
         // 接收到请求，记录请求内容
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
@@ -47,7 +46,6 @@ public class WebLogAspect {
         String param = Arrays.toString(joinPoint.getArgs());
         String ip = getIP(request);
         ResponseMessage responseMessage = ret == null?ResponseMessage.builder().build():(ResponseMessage) ret;
-
         String userId = userAgentUtil.getUserId(request)==null? null :userAgentUtil.getUserId(request).toString();
         SysLog sysLog = SysLog.builder().ip(ip)
                 .methodName(classMethod)
@@ -59,6 +57,7 @@ public class WebLogAspect {
                 .httpMethod(httpMethod)
                 .requestUrl(requestURL)
                 .build();
+        log.info(sysLog.toString());
         sysLogService.save(sysLog);
     }
 

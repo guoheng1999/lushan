@@ -1,30 +1,32 @@
 package edu.cuit.lushan.utils;
 
-import com.louislivi.fastdep.shirojwt.jwt.JwtUtil;
+
 import edu.cuit.lushan.entity.User;
+import edu.cuit.lushan.enums.RoleEnum;
+import edu.cuit.lushan.exception.AuthorizationException;
 import edu.cuit.lushan.service.IUserService;
-import org.apache.shiro.authz.AuthorizationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
-
 import javax.servlet.http.HttpServletRequest;
 
 @Component
 @Scope("prototype")
+@Slf4j
 public class UserAgentUtil {
     @Autowired
-    JwtUtil jwtUtil;
+    TokenUtil tokenUtil;
     @Autowired
     IUserService userService;
 
 
-
-    public String sign(Integer userId){
-        return jwtUtil.sign(userId.toString());
+    public String sign(Integer userId) {
+        return tokenUtil.sign(userId);
     }
+
     //其中ip的获取方式
     public String getIpAddress(HttpServletRequest request) {
         String ip = request.getHeader("x-forwarded-for");
@@ -82,38 +84,47 @@ public class UserAgentUtil {
         return ip;
     }
 
-    public String getToken(HttpServletRequest request){
-        return request.getHeader("Authorization") == null? null:request.getHeader("Authorization").replace("Bearer ","");
+    public String getToken(HttpServletRequest request) {
+        String token = request.getHeader("token");
+        return token;
     }
 
-    public Integer getUserId(HttpServletRequest request){
-        return jwtUtil.getUserId(getToken(request)) == null ? null: Integer.valueOf(jwtUtil.getUserId(getToken(request)));
+    public Integer getUserId(HttpServletRequest request) {
+        String token = getToken(request);
+        Integer userId = tokenUtil.getUserId(token);
+        return userId;
     }
 
-    public boolean verifyUser(User user){
-        if (user != null){
-            if (user.getAccountStatus() == null){
+    public void verifyUser(User user) throws RuntimeException {
+        if (user != null) {
+            if (user.getAccountStatus() == null) {
                 throw new AuthorizationException("The current account is abnormal!");
-            }else {
-                return true;
+            } else {
             }
-        }else {
+        } else {
             throw new AuthorizationException("The current account is not found!");
         }
     }
 
-    public boolean verifyEditorPermission(Integer userId,User user){
+    public void verifyEditorPermission(Integer userId, User user) {
         User operateUser = userService.getById(userId);
         verifyUser(user);
         switch (operateUser.getRoleId()) {
             case 2:
             case 1:
-                return true;
+                return;
             case 0:
-                if (operateUser.getId() == user.getId()){
-                    return true;
+                if (operateUser.getId() == user.getId()) {
                 }
         }
-        return false;
+    }
+    public boolean hasRole(User user, RoleEnum roleEnum){
+        try {
+            //  按照排序先后计算
+            System.out.println(roleEnum.ordinal());
+            return roleEnum.ordinal() >= user.getRoleId();
+        }catch (Exception e){
+            return false;
+        }
     }
 }

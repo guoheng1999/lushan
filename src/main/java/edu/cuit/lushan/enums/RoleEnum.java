@@ -1,5 +1,5 @@
 package edu.cuit.lushan.enums;
 
 public enum RoleEnum {
-    ADMIN, MANAGER, USER;
+    ADMIN, MANAGER,VIP, USER;
 }

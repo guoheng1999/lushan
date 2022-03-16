@@ -3,13 +3,15 @@ package edu.cuit.lushan.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import edu.cuit.lushan.annotation.DataLog;
+import edu.cuit.lushan.annotation.RequireRoles;
 import edu.cuit.lushan.entity.Device;
+import edu.cuit.lushan.enums.RoleEnum;
 import edu.cuit.lushan.service.IDeviceService;
 import edu.cuit.lushan.utils.ResponseMessage;
 import edu.cuit.lushan.utils.UserAgentUtil;
 import edu.cuit.lushan.vo.DeviceInfoVO;
 import io.swagger.annotations.ApiOperation;
-import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,16 +29,16 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/device")
-@RequiresRoles({"USER"})
-@CrossOrigin
 public class DeviceController {
 
     @Autowired
     IDeviceService deviceService;
     @Autowired
     UserAgentUtil userAgentUtil;
-    @ApiOperation(value = "获取所有设备信息", tags = {"设备管理"})
+    @ApiOperation(value = "获取所有设备的信息", tags = {"设备管理"})
     @GetMapping("/")
+    @DataLog
+    @CrossOrigin
     public ResponseMessage getAll() {
         List result = new LinkedList();
         deviceService.list().forEach((item)->{
@@ -53,6 +55,8 @@ public class DeviceController {
 
     @ApiOperation(value = "获取一个设备信息", tags = {"设备管理"})
     @GetMapping("/{deviceId}")
+    @DataLog
+    @RequireRoles(value = RoleEnum.ADMIN)
     public ResponseMessage getOne(@PathVariable String deviceId) {
         Device device = deviceService.getById(deviceId);
         if (device == null){
@@ -68,6 +72,7 @@ public class DeviceController {
 
     @ApiOperation(value = "添加设备信息", tags = {"设备管理"})
     @PostMapping("/")
+    @DataLog
     public ResponseMessage register(@RequestBody DeviceInfoVO deviceVO, HttpServletRequest request) {
         Device device = Device.builder().deviceName(deviceVO.getDeviceName())
                 .description(deviceVO.getDescription())
@@ -82,6 +87,7 @@ public class DeviceController {
 
     @ApiOperation(value = "更改设备信息", tags = {"设备管理"})
     @PutMapping("/")
+    @DataLog
     public ResponseMessage update(@RequestBody DeviceInfoVO deviceVO) {
         Device device = deviceService.getById(deviceVO.getId());
         if (device == null) {
@@ -98,6 +104,7 @@ public class DeviceController {
 
     @ApiOperation(value = "删除设备信息", tags = {"设备管理"})
     @DeleteMapping("/{deviceId}")
+    @DataLog
     public ResponseMessage delete(@PathVariable String deviceId) {
         if (deviceService.getById(deviceId) == null) {
             return ResponseMessage.errorMsg(2500, "The device is not found!", deviceId);

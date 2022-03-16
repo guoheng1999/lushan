@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * @since 2020/7/15
  */
 @Aspect
-@Order(2147483647)
+@Order()
 @Component
 @AllArgsConstructor
 @Slf4j

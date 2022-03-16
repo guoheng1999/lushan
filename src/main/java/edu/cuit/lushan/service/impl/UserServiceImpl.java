@@ -25,6 +25,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public User loginByEmail(String email, String password) {
         User user = selectByEmail(email);
         if (user == null) return null;
+        if (user.getAccountStatus() != 1){
+            return null;
+        }
         if (password.equals(user.getPassword())) {
             return user;
         } else {

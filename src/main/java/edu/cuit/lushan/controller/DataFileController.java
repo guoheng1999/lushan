@@ -3,7 +3,7 @@ package edu.cuit.lushan.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
-import com.louislivi.fastdep.shirojwt.jwt.JwtUtil;
+import edu.cuit.lushan.annotation.DataLog;
 import edu.cuit.lushan.entity.DataFile;
 import edu.cuit.lushan.entity.Device;
 import edu.cuit.lushan.service.IDataFileService;
@@ -13,7 +13,6 @@ import edu.cuit.lushan.utils.UserAgentUtil;
 import edu.cuit.lushan.vo.DataFileVO;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/dataFile")
 @Slf4j
-@RequiresRoles({"USER"})
 @CrossOrigin
 public class DataFileController {
 
@@ -43,18 +41,21 @@ public class DataFileController {
 
     @ApiOperation(value = "获取所有数据文件信息", tags = {"数据文件管理"})
     @GetMapping("/")
+    @DataLog
     public ResponseMessage getAll() {
         return ResponseMessage.success(dataFileService.list());
     }
 
     @ApiOperation(value = "获取一个数据文件信息", tags = {"数据文件管理"})
     @GetMapping("/{fileId}")
+    @DataLog
     public ResponseMessage getOne(@PathVariable String fileId) {
         DataFile dataFile = dataFileService.getById(fileId);
         return ResponseMessage.success(dataFile);
     }
     @ApiOperation(value = "通过文件名获取一个数据文件信息", tags = {"数据文件管理"})
     @GetMapping("/name/{dataFileName}")
+    @DataLog
     public ResponseMessage getByFileName(@PathVariable String dataFileName) {
         DataFile dataFile = dataFileService.getOneByDataFileName(dataFileName);
         if (dataFile == null) {
@@ -64,6 +65,7 @@ public class DataFileController {
     }
     @ApiOperation(value = "通过文件名修改一个数据文件信息", tags = {"数据文件管理"})
     @PutMapping("/name/{dataFileName}")
+    @DataLog
     public ResponseMessage updateByFileName(@PathVariable String dataFileName, @RequestBody DataFileVO dataFileVO) {
         // 前端未传入dataFileVO对象，直接返回
         if (dataFileVO==null) {
@@ -93,6 +95,7 @@ public class DataFileController {
 
     @ApiOperation(value = "添加数据文件信息", tags = {"数据文件管理"})
     @PostMapping("/")
+    @DataLog
     public ResponseMessage register(@RequestBody DataFileVO dataFileVO) {
 
         if (dataFileVO == null || BeanUtil.hasNullField(dataFileVO)) {
@@ -118,6 +121,7 @@ public class DataFileController {
 
     @ApiOperation(value = "更改数据文件信息", tags = {"数据文件管理"})
     @PutMapping("/{fileId}")
+    @DataLog
     public ResponseMessage update(@PathVariable String fileId, @RequestBody DataFileVO dataFileVO, HttpServletRequest request) {
         DataFile myDataFile = dataFileService.getById(fileId);
         if (myDataFile == null) {
@@ -142,6 +146,7 @@ public class DataFileController {
 
     @ApiOperation(value = "删除数据文件信息", tags = {"数据文件管理"})
     @DeleteMapping("/{fileId}")
+    @DataLog
     public ResponseMessage delete(@PathVariable String fileId, HttpServletRequest request) {
         DataFile dataFile = dataFileService.getById(fileId);
         if (dataFile == null){
