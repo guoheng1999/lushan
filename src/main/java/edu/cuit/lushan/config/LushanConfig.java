@@ -8,7 +8,11 @@ import org.springframework.stereotype.Component;
 @Component
 @Data
 public class LushanConfig {
-    private String dataRoot;
+    private String currentDataRoot;
+    private String historyDataRoot;
+    private String historyDatasetPicture;
     private String proofRoot;
+    private String bufferDataRoot;
+    private String linkRoot;
     private String secret;
 }

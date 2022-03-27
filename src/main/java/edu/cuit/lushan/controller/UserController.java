@@ -6,13 +6,17 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.StrUtil;
 import edu.cuit.lushan.annotation.DataLog;
 import edu.cuit.lushan.annotation.RequireRoles;
+import edu.cuit.lushan.annotation.WebLog;
 import edu.cuit.lushan.entity.User;
 import edu.cuit.lushan.enums.RoleEnum;
 import edu.cuit.lushan.enums.UserVOEnum;
+import edu.cuit.lushan.exception.AuthorizationException;
 import edu.cuit.lushan.factory.AbstractFactory;
 import edu.cuit.lushan.factory.FactoryProducer;
-import edu.cuit.lushan.factory.UserVOFactory;
+import edu.cuit.lushan.service.IUserProofService;
 import edu.cuit.lushan.service.IUserService;
+import edu.cuit.lushan.thread.UserOperateThread;
+import edu.cuit.lushan.utils.LushanRedisUtil;
 import edu.cuit.lushan.utils.ResponseMessage;
 import edu.cuit.lushan.utils.UserAgentUtil;
 import edu.cuit.lushan.vo.*;
@@ -37,33 +41,57 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 @ApiModel(value = "用户管理", description = "对用户的增删改查操作")
+@CrossOrigin
 public class UserController {
 
     @Autowired
     IUserService userService;
     @Autowired
+    IUserProofService userProofService;
+    @Autowired
     UserAgentUtil userAgentUtil;
     AbstractFactory<User> abstractFactory = FactoryProducer.getFactory(FactoryProducer.FactoryName.USER);
+    @Autowired
+    LushanRedisUtil redisUtil;
 
-    @ApiOperation(value = "获取所有用户", tags = {"用户管理"})
+    @ApiOperation(value = "获取所有已通过的用户", tags = {"用户管理"})
     @GetMapping("/all")
-    @CrossOrigin
     @RequireRoles(value = RoleEnum.MANAGER)
+    @WebLog
     public ResponseMessage getAll() {
         List list = new ArrayList();
-        userService.list().forEach(
+        userService.selectAllUser().forEach(
                 (e) -> list.add(abstractFactory.buildVOByEntity(e, UserVOEnum.USER_INFO.name()))
         );
         return ResponseMessage.success(list);
     }
 
+    @DataLog
+    @ApiOperation(value = "查询所有的待审核用户", tags = {"用户管理"})
+    @GetMapping("/reviewed/all")
+    @WebLog
+    @RequireRoles(RoleEnum.MANAGER)
+    public ResponseMessage getAllUnderReviewed() {
+        return ResponseMessage.success(userService.selectAllUnderReviewed());
+    }
+
+
+    @DataLog
+    @ApiOperation(value = "查询所有被封禁的用户", tags = {"用户管理"})
+    @GetMapping("/banned/all")
+    @WebLog
+    @RequireRoles(RoleEnum.MANAGER)
+    public ResponseMessage getAllBanedUser() {
+        return ResponseMessage.success(userService.selectAllBanedUser());
+    }
+
     @ApiOperation(value = "获取一个用户的信息", tags = {"用户管理"})
-    @GetMapping("/one")
-    @CrossOrigin
-    public ResponseMessage getOne(@PathVariable String userId) {
-        User user = userService.getById(userId);
-        if (user == null){
-            return ResponseMessage.nullError(userId);
+    @GetMapping("/{email}")
+    @WebLog
+    public ResponseMessage getOne(@PathVariable String email) {
+        User user = userService.selectByEmail(email);
+        if (user == null) {
+            return ResponseMessage.nullError(email);
         }
         return ResponseMessage.success(
                 abstractFactory.buildVOByEntity(user, UserVOEnum.USER_INFO.name())
@@ -73,9 +101,10 @@ public class UserController {
     @ApiOperation(value = "添加用户", tags = {"用户管理"})
     @PostMapping("/")
     @DataLog
+    @WebLog
     public ResponseMessage add(@RequestBody RegisterVO registerVO,
                                HttpServletRequest request) {
-        if (registerVO == null || BeanUtil.hasNullField(registerVO)){
+        if (registerVO == null || BeanUtil.hasNullField(registerVO)) {
             return ResponseMessage.nullError(registerVO);
         }
         if (userService.selectByEmail(registerVO.getEmail()) != null) {
@@ -91,18 +120,19 @@ public class UserController {
 
     @DataLog
     @ApiOperation(value = "更新用户基本信息", tags = {"用户管理"})
-    @PutMapping("/{userId}")
-    public ResponseMessage update(@PathVariable String userId,
+    @PutMapping("/{email}")
+    @WebLog
+    public ResponseMessage update(@PathVariable String email,
                                   @RequestBody UserInfoVO releaseVersionUserInfo,
                                   HttpServletRequest request) {
-        User oldUser = userService.getById(userId);
+        User oldUser = userService.selectByEmail(email);
         verifyPermission(request, oldUser);
 
-        BeanUtil.copyProperties(releaseVersionUserInfo,oldUser,
+        BeanUtil.copyProperties(releaseVersionUserInfo, oldUser,
                 CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
         if (userService.updateById(oldUser)) {
             return ResponseMessage.success(releaseVersionUserInfo);
-        }else {
+        } else {
             return ResponseMessage.serverError(releaseVersionUserInfo);
         }
     }
@@ -111,72 +141,88 @@ public class UserController {
     @DataLog
     @ApiOperation(value = "修改用户密码", tags = {"用户管理"})
     @PutMapping("/password")
+    @WebLog(hasToken = false)
     public ResponseMessage changePassword(
-                                          @RequestBody UserPasswordVO userPasswordVO,
-                                          HttpServletRequest request) {
-        if (userPasswordVO == null || BeanUtil.hasNullField(userPasswordVO)){
+            @RequestBody UserPasswordVO userPasswordVO,
+            HttpServletRequest request) {
+        if (userPasswordVO == null || BeanUtil.hasNullField(userPasswordVO, "code")) {
             return ResponseMessage.nullError(userPasswordVO);
         }
-        User oldUser =  userService.getById(userPasswordVO.getId());
+        User oldUser = userService.selectByEmail(userPasswordVO.getEmail());
         // 验证操作用户权限
-        verifyPermission(request, oldUser);
-        BeanUtil.copyProperties(userPasswordVO,oldUser,
+//        verifyPermission(request, oldUser);
+        // 查看用户是否携带code验证码 如果未携带判断是否具有管理权限。
+        if (userPasswordVO.getCode() == null) {
+            if (!userAgentUtil.hasRole(userService.getById(userAgentUtil.getUserId(request)),
+                    RoleEnum.MANAGER)) {
+                throw new AuthorizationException(String.format("The current operation requires [%s] or higher privileges.", RoleEnum.MANAGER.name()));
+            }
+        }
+        // 从redis数据库中取出存放的code
+        String code = (String) redisUtil.get(userPasswordVO.getEmail(), String.class);
+        // code 为空或code比对不成功返回出错
+        if (code == null || !code.equals(userPasswordVO.getCode())) {
+            throw new AuthorizationException("The current verification code is invalid or incorrect!");
+        }
+        BeanUtil.copyProperties(userPasswordVO, oldUser,
                 CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
         if (userService.updateById(oldUser)) {
             return ResponseMessage.success(userPasswordVO);
-        }else {
+        } else {
             return ResponseMessage.serverError(userPasswordVO);
         }
     }
 
     @DataLog
     @ApiOperation(value = "修改用户组织机构", tags = {"用户管理"})
-    @PutMapping("/{userId}/organization")
-    public ResponseMessage changeUserOrganization(@PathVariable String userId,
-                                                  @RequestBody UserOrganizationVO userOrganizationVO,
+    @PutMapping("/organization")
+    @WebLog
+    public ResponseMessage changeUserOrganization(@RequestBody UserOrganizationVO userOrganizationVO,
                                                   HttpServletRequest request) {
-        User oldUser = userService.getById(userId);
+        User oldUser = userService.selectByEmail(userOrganizationVO.getEmail());
         verifyPermission(request, oldUser);
-        BeanUtil.copyProperties(userOrganizationVO,oldUser,
+        BeanUtil.copyProperties(userOrganizationVO, oldUser,
                 CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
         if (userService.updateById(oldUser)) {
             return ResponseMessage.success(userOrganizationVO);
-        }else {
+        } else {
             return ResponseMessage.serverError(userOrganizationVO);
         }
     }
 
     @DataLog
     @ApiOperation(value = "修改用户权限", tags = {"用户管理"})
-    @PutMapping("/{userId}/authorization")
-    public ResponseMessage changeUserAuthorization(@PathVariable Integer userId,
-                                                   @RequestBody UserAuthorizationVO userAuthorizationVO,
+    @PutMapping("/authorization")
+    @WebLog
+    public ResponseMessage changeUserAuthorization(@RequestBody UserAuthorizationVO userAuthorizationVO,
                                                    HttpServletRequest request) {
-        User oldUser =userService.getById(userId);
+        User oldUser = userService.selectByEmail(userAuthorizationVO.getEmail());
         verifyPermission(request, oldUser);
-        BeanUtil.copyProperties(userAuthorizationVO,oldUser,
+        BeanUtil.copyProperties(userAuthorizationVO, oldUser,
                 CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
+
         if (userService.updateById(oldUser)) {
             return ResponseMessage.success(userAuthorizationVO);
-        }else {
+        } else {
             return ResponseMessage.serverError(userAuthorizationVO);
         }
     }
 
 
-    @ApiOperation(value = "删除用户信息", tags = {"用户管理"})
-    @DeleteMapping("/{userId}")
+    @ApiOperation(value = "逻辑删除用户信息", tags = {"用户管理"})
+    @DeleteMapping("/{email}")
     @DataLog
-    public ResponseMessage delete(@PathVariable String userId, HttpServletRequest request) {
+    @WebLog
+    public ResponseMessage delete(@PathVariable String email, HttpServletRequest request) {
         // 判断userId是否为null或空字符串
-        if (StrUtil.isEmpty(userId)){
-            return ResponseMessage.nullError(userId);
+        if (StrUtil.isEmpty(email)) {
+            return ResponseMessage.nullError(email);
         }
-        User user = userService.getById(userId);
+        User user = userService.selectByEmail(email);
         // 验证是否对当前操作对象有权限
         verifyPermission(request, user);
         if (user == null) {
-            return ResponseMessage.notFound(userId);
+            return ResponseMessage.notFound(email);
         }
         // 更新的是verifyPermission中记录的修改人。
         userService.updateById(user);
@@ -184,17 +230,42 @@ public class UserController {
         if (userService.removeById(user.getId())) {
             return ResponseMessage.successCodeMsgData(2000, "User deleted successfully!", user);
         } else {
-            return ResponseMessage.serverError(userId);
+            return ResponseMessage.serverError(email);
         }
 
+    }
+
+    @ApiOperation(value = "物理删除用户信息", tags = {"用户管理"})
+    @DeleteMapping("/physics/{email}")
+    @DataLog
+    @WebLog
+    @RequireRoles(RoleEnum.MANAGER)
+    public ResponseMessage deletePhysics(@PathVariable String email, HttpServletRequest request) {
+        // 判断userId是否为null或空字符串
+        if (StrUtil.isEmpty(email)) {
+            return ResponseMessage.nullError(email);
+        }
+        // 查询是否存在待删用户
+        User user = userService.selectByEmail(email);
+        if (user == null) {
+            return ResponseMessage.notFound(email);
+        } else {
+
+            // 验证是否对当前操作对象有权限
+            verifyPermission(request, user);
+            Thread thread = new Thread(new UserOperateThread(email, userProofService, userService));
+            thread.start();
+            return ResponseMessage.successCodeMsgData(2000, "User deleted successfully!", user);
+        }
     }
 
 
     @ApiOperation(value = "用户登录接口", tags = {"用户管理"})
     @PostMapping("/login")
+    @WebLog
     public ResponseMessage login(HttpServletResponse response, LoginVO loginVO) {
         // 判断请求数据是否为空,包括是否为空字符。
-        if (loginVO == null || StrUtil.isEmpty(loginVO.getEmail()) || StrUtil.isEmpty(loginVO.getPassword())){
+        if (loginVO == null || StrUtil.isEmpty(loginVO.getEmail()) || StrUtil.isEmpty(loginVO.getPassword())) {
             return ResponseMessage.nullError(loginVO);
         }
         // 通过email查找用户

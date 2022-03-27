@@ -15,5 +15,4 @@ public class RegisterVO {
     private String phone;
     private String organization;
     private String realName;
-    private String userEdu;
 }

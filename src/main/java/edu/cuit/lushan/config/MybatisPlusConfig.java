@@ -1,6 +1,5 @@
 package edu.cuit.lushan.config;
 
-import edu.cuit.lushan.config.PerformanceInterceptor;
 import edu.cuit.lushan.handler.BaseDataLog;
 import edu.cuit.lushan.handler.DataUpdateInterceptor;
 import org.mybatis.spring.annotation.MapperScan;
@@ -36,7 +35,6 @@ public class MybatisPlusConfig {
      * <p>
      * 数据更新操作处理
      * </p>
-     *
      */
     @Bean
     @ConditionalOnMissingBean

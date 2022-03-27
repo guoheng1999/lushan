@@ -1,11 +1,11 @@
 package edu.cuit.lushan.mapper;
 
-import edu.cuit.lushan.entity.UserProof;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import edu.cuit.lushan.entity.UserProof;
 
 /**
  * <p>
- *  Mapper 接口
+ * Mapper 接口
  * </p>
  *
  * @author Guoheng

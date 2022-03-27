@@ -7,9 +7,10 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class UserEduVO {
-    private Integer id;
-    private String userEdu;
+@AllArgsConstructor
+public class EmailVO {
+    private String email;
+    private String message;
+    private Integer type;
 }

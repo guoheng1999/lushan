@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserPasswordVO {
-    private Integer id;
-    private String oldPassword;
-    private String newPassword;
+    private String email;
+    private String password;
+    private String code;
 }

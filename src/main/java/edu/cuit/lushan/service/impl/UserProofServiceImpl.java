@@ -1,15 +1,17 @@
 package edu.cuit.lushan.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.cuit.lushan.entity.UserProof;
 import edu.cuit.lushan.mapper.UserProofMapper;
 import edu.cuit.lushan.service.IUserProofService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author Guoheng
@@ -26,9 +28,9 @@ public class UserProofServiceImpl extends ServiceImpl<UserProofMapper, UserProof
     }
 
     @Override
-    public UserProof getByUserId(String userId) {
+    public List<UserProof> getByUserId(Integer userId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("user_id", userId);
-        return getBaseMapper().selectOne(queryWrapper);
+        return getBaseMapper().selectList(queryWrapper);
     }
 }

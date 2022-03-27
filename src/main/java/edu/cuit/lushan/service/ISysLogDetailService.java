@@ -1,7 +1,7 @@
 package edu.cuit.lushan.service;
 
-import edu.cuit.lushan.entity.SysLogDetail;
 import com.baomidou.mybatisplus.extension.service.IService;
+import edu.cuit.lushan.entity.SysLogDetail;
 
 /**
  * <p>

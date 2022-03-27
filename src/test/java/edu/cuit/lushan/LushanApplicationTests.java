@@ -1,38 +1,38 @@
 package edu.cuit.lushan;
 
-import cn.hutool.Hutool;
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
-import cn.hutool.core.date.LocalDateTimeUtil;
-import cn.hutool.crypto.SecureUtil;
-import cn.hutool.crypto.symmetric.AES;
-import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
-import cn.hutool.json.JSONUtil;
-import com.alibaba.fastjson.JSON;
-import edu.cuit.lushan.entity.Device;
-import edu.cuit.lushan.entity.User;
-import edu.cuit.lushan.utils.LushanRedisUtil;
-import edu.cuit.lushan.vo.UserInfoVO;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ZipUtil;
+import edu.cuit.lushan.service.ICurrentDataService;
+import edu.cuit.lushan.thread.DownLoadFileThread;
+import edu.cuit.lushan.utils.EmailUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 
-import javax.crypto.SecretKey;
-import java.util.concurrent.TimeUnit;
+import javax.mail.MessagingException;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+
+//import edu.cuit.lushan.utils.LushanRedisUtil;
+//import org.springframework.data.redis.core.RedisTemplate;
+//import org.springframework.data.redis.core.StringRedisTemplate;
+
 
 @SpringBootTest
 class LushanApplicationTests {
-
-    @Autowired
-    StringRedisTemplate stringRedisTemplate;
-    @Autowired
-    LushanRedisUtil<Device> lushanRedisUtil;
+    //
+//    @Autowired
+//    StringRedisTemplate stringRedisTemplate;
+//    @Autowired
+//    LushanRedisUtil<Device> lushanRedisUtil;
     @Test
     void contextLoads() {
     }
-//    @Test
+
+    @Autowired
+    ICurrentDataService currentDataService;
+
+    //    @Test
 //    void testHutool(){
 //        UserInfoVO releaseVersion = new UserInfoVO();
 //        releaseVersion.setEmail("sss");
@@ -96,5 +96,43 @@ class LushanApplicationTests {
 //        String decrypt = aes.decryptStr(encrypt);
 //        Device device1 = JSON.parseObject(decrypt).toJavaObject(Device.class);
 //        System.out.println(device1);
+//    }
+    @Test
+    void testEmail() throws UnsupportedEncodingException, MessagingException {
+        EmailUtil.sendHtmlMail("guoheng85@163.com", "账号审核已通过！", "<p>恭喜您！账号注册审核已成功！</p><hr /><ul><li>本邮件为自动发送, 请勿直接回复</li><li>如非本人发起, 请确认账号是否已被他人盗用</li><li>如有其他问题请发送邮件到 <a href=\"mailto:guoheng85@163.com\">guoheng85@163.com</a></li></ul>");
+    }
+//
+//    @Test
+//    void testCurrentDataService() {
+//        System.err.println(currentDataService.getByDeviceIdAndDataLevel(6, 0));
+//        System.err.println(currentDataService.getByDeviceIdAndDataLevelWithFromDayEndDay(6, 0, "2015-11-20", "2015-11-22"));
+//    }
+//
+//    @Test
+//    void testZipUtil() {
+//        ZipUtil.zip(FileUtil.file("E:/lushan_server/datasets/test.zip"), true,
+//                FileUtil.file("E:\\lushan_server\\datasets\\庐山数据")
+//        );
+//    }
+//
+//    @Test
+//    void testSendLinkMail() {
+//
+//        String ROOT = "E:\\lushan_server\\upload\\data";
+//        String email = "3084233184@qq.com";
+//        File[] files = new File[5];
+//        String targetFileName = "2983n4v57345bn.zip";
+//        String[] filesName = {"08df9009-4cf8-46f0-9007-798cc20ac73f.jpg",
+//                "8a183832-65b0-4e9e-b0a0-61c5fc419f79.jpg",
+//                "87b03f7e-5d02-49f8-b433-1453ad07334b.png",
+//                "94beba22-c2ac-4611-9c99-b78128edb3bc.webp",
+//                "ee65fffe-4277-4be4-9b77-0546fcda3391.jpg"
+//        };
+//        for (int i = 0; i < files.length; i++) {
+//            files[i] = FileUtil.file(ROOT, "08df9009-4cf8-46f0-9007-798cc20ac73f.jpg");
+//        }
+//        DownLoadFileThread downLoadFileThread = new DownLoadFileThread(email, files, targetFileName);
+//        Thread thread = new Thread(downLoadFileThread);
+//        thread.start();
 //    }
 }

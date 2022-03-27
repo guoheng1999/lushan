@@ -16,12 +16,13 @@ public class GlobalExceptionHandler {
         ResponseMessage result;
         if (e instanceof NoHandlerFoundException) {
             result = ResponseMessage.errorMsg(2404, e.getMessage());
-        } else if (e instanceof AuthorizationException){
+        } else if (e instanceof AuthorizationException) {
+            e.printStackTrace();
             result = ResponseMessage.errorMsg(2500, e.getMessage(), ((AuthorizationException) e).getData());
-        }else {
+        } else {
             result = ResponseMessage.errorMsg(2500, e.getMessage());
+            e.printStackTrace();
         }
-        System.err.println(result);
         return result;
     }
 }

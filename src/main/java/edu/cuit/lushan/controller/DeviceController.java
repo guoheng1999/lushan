@@ -4,9 +4,8 @@ package edu.cuit.lushan.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import edu.cuit.lushan.annotation.DataLog;
-import edu.cuit.lushan.annotation.RequireRoles;
+import edu.cuit.lushan.annotation.WebLog;
 import edu.cuit.lushan.entity.Device;
-import edu.cuit.lushan.enums.RoleEnum;
 import edu.cuit.lushan.service.IDeviceService;
 import edu.cuit.lushan.utils.ResponseMessage;
 import edu.cuit.lushan.utils.UserAgentUtil;
@@ -35,19 +34,20 @@ public class DeviceController {
     IDeviceService deviceService;
     @Autowired
     UserAgentUtil userAgentUtil;
+
     @ApiOperation(value = "获取所有设备的信息", tags = {"设备管理"})
     @GetMapping("/")
     @DataLog
     @CrossOrigin
     public ResponseMessage getAll() {
         List result = new LinkedList();
-        deviceService.list().forEach((item)->{
+        deviceService.list().forEach((item) -> {
             result.add(
                     DeviceInfoVO.builder()
                             .deviceName(item.getDeviceName())
                             .description(item.getDescription())
                             .id(item.getId())
-                    .build()
+                            .build()
             );
         });
         return ResponseMessage.success(result);
@@ -56,10 +56,9 @@ public class DeviceController {
     @ApiOperation(value = "获取一个设备信息", tags = {"设备管理"})
     @GetMapping("/{deviceId}")
     @DataLog
-    @RequireRoles(value = RoleEnum.ADMIN)
     public ResponseMessage getOne(@PathVariable String deviceId) {
         Device device = deviceService.getById(deviceId);
-        if (device == null){
+        if (device == null) {
             return ResponseMessage.successCodeMsgData(2404, "Device not found!", deviceId);
         }
         DeviceInfoVO deviceVO = DeviceInfoVO.builder()
@@ -73,6 +72,7 @@ public class DeviceController {
     @ApiOperation(value = "添加设备信息", tags = {"设备管理"})
     @PostMapping("/")
     @DataLog
+    @WebLog
     public ResponseMessage register(@RequestBody DeviceInfoVO deviceVO, HttpServletRequest request) {
         Device device = Device.builder().deviceName(deviceVO.getDeviceName())
                 .description(deviceVO.getDescription())
@@ -88,12 +88,13 @@ public class DeviceController {
     @ApiOperation(value = "更改设备信息", tags = {"设备管理"})
     @PutMapping("/")
     @DataLog
+    @WebLog
     public ResponseMessage update(@RequestBody DeviceInfoVO deviceVO) {
         Device device = deviceService.getById(deviceVO.getId());
         if (device == null) {
             return ResponseMessage.errorMsg(2404, "Device not found!", deviceVO);
         }
-        BeanUtil.copyProperties(deviceVO,device,
+        BeanUtil.copyProperties(deviceVO, device,
                 CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
         if (deviceService.updateById(device)) {
             return ResponseMessage.success(deviceVO);
@@ -105,13 +106,14 @@ public class DeviceController {
     @ApiOperation(value = "删除设备信息", tags = {"设备管理"})
     @DeleteMapping("/{deviceId}")
     @DataLog
+    @WebLog
     public ResponseMessage delete(@PathVariable String deviceId) {
         if (deviceService.getById(deviceId) == null) {
             return ResponseMessage.errorMsg(2500, "The device is not found!", deviceId);
         }
         if (deviceService.removeById(deviceId)) {
             return ResponseMessage.success(deviceId);
-        }else {
+        } else {
             return ResponseMessage.errorMsg(2500, "Server Error!", deviceId);
         }
     }

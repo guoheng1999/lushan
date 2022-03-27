@@ -1,9 +1,7 @@
 package edu.cuit.lushan.utils;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
-import edu.cuit.lushan.entity.Device;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -19,7 +17,8 @@ public class LushanRedisUtil<T> {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-    public boolean save(String key, T value){
+
+    public boolean save(String key, T value) {
         return this.save(key, value, HOUR);
     }
 
@@ -30,26 +29,44 @@ public class LushanRedisUtil<T> {
      * @param expireTime{TimeUnit == HOURS}
      * @return
      */
-    public boolean save(String key, T value, Long expireTime){
+    public boolean save(String key, T value, Long expireTime) {
         String jsonStr = JSON.toJSONString(value);
         stringRedisTemplate.opsForValue().set(key, jsonStr, expireTime, TimeUnit.HOURS);
-        if (StrUtil.isEmpty(stringRedisTemplate.opsForValue().get(key))){
+        if (StrUtil.isEmpty(stringRedisTemplate.opsForValue().get(key))) {
             return false;
-        }else {
+        } else {
             return true;
         }
     }
-    public T get(String key, Class<T> clazz){
+
+    /**
+     * SECONDS
+     *
+     * @param key
+     * @param value
+     * @param expireTime
+     * @return
+     */
+    public boolean saveForMinutes(String key, T value, Long expireTime) {
+        String jsonStr = JSON.toJSONString(value);
+        stringRedisTemplate.opsForValue().set(key, jsonStr, expireTime, TimeUnit.MINUTES);
+        if (StrUtil.isEmpty(stringRedisTemplate.opsForValue().get(key))) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public T get(String key, Class<T> clazz) {
         String getStr = stringRedisTemplate.opsForValue().get(key);
         if (StrUtil.isEmpty(getStr)) {
             return null;
         }
         T object = JSON.parseObject(getStr, clazz);
-        System.out.println("getDevice = " + object);
         return object;
     }
-    public boolean delete(String key){
+
+    public boolean delete(String key) {
         return stringRedisTemplate.delete(key);
     }
-
 }

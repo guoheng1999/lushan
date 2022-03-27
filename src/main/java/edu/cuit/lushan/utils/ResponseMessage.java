@@ -1,14 +1,17 @@
-
 package edu.cuit.lushan.utils;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ResponseMessage implements Serializable {
     // 结果标记(true:执行成功 false:执行失败)
     private Boolean flag;
@@ -18,6 +21,15 @@ public class ResponseMessage implements Serializable {
     private String msg;
     // 返回数据
     private Object data;
+    // 令牌
+    private String token;
+
+    public ResponseMessage(boolean flag, int code, String msg, Object data) {
+        this.flag = flag;
+        this.code = code;
+        this.msg = msg;
+        this.data = data;
+    }
 
 
     /**
@@ -128,7 +140,6 @@ public class ResponseMessage implements Serializable {
     public static ResponseMessage existsError(Object data) {
         return new ResponseMessage(false, 2500, "Current data already exists!", data);
     }
-
 
 
 }

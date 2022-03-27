@@ -1,9 +1,6 @@
 package edu.cuit.lushan.entity;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
 import com.baomidou.mybatisplus.annotation.*;
-import edu.cuit.lushan.vo.RegisterVO;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -51,11 +48,6 @@ public class User implements Serializable {
     @TableLogic(value = "0", delval = "1")
     @TableField(select = false, fill = FieldFill.INSERT)
     private Integer isDelete;
-
-    /**
-     * 用户学历
-     */
-    private String userEdu;
 
     /**
      * 用户姓名

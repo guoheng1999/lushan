@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserOrganizationVO {
-    private Integer id;
+    private String email;
     private String organization;
 }

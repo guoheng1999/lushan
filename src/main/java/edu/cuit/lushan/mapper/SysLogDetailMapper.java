@@ -1,7 +1,7 @@
 package edu.cuit.lushan.mapper;
 
-import edu.cuit.lushan.entity.SysLogDetail;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import edu.cuit.lushan.entity.SysLogDetail;
 
 /**
  * <p>

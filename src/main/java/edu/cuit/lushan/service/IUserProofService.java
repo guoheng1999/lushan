@@ -1,11 +1,13 @@
 package edu.cuit.lushan.service;
 
-import edu.cuit.lushan.entity.UserProof;
 import com.baomidou.mybatisplus.extension.service.IService;
+import edu.cuit.lushan.entity.UserProof;
+
+import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author Guoheng
@@ -13,5 +15,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IUserProofService extends IService<UserProof> {
     UserProof getByUserProofFileName(String fileName);
-    UserProof getByUserId(String userId);
+
+    List<UserProof> getByUserId(Integer userId);
 }

@@ -16,20 +16,21 @@ public class Authorization {
     private Integer userId;
     private Set<String> roles;
 
-    private void addRole(String role){
-        if (this.getRoles() == null){
-            Set set = new HashSet<String >();
+    private void addRole(String role) {
+        if (this.getRoles() == null) {
+            Set set = new HashSet<String>();
             set.add(role);
             this.setRoles(set);
-        }else {
+        } else {
             this.getRoles().add(role);
         }
     }
-    private void addRoles(Set<String> roles){
-        if (roles == null){
+
+    private void addRoles(Set<String> roles) {
+        if (roles == null) {
             return;
-        }else {
-            roles.forEach( role -> {
+        } else {
+            roles.forEach(role -> {
                 this.getRoles().add(role);
             });
         }

@@ -2,13 +2,17 @@ package edu.cuit.lushan.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import edu.cuit.lushan.annotation.DataLog;
+import edu.cuit.lushan.annotation.RequireRoles;
+import edu.cuit.lushan.annotation.WebLog;
 import edu.cuit.lushan.entity.User;
-import edu.cuit.lushan.enums.UserVOEnum;
+import edu.cuit.lushan.enums.RoleEnum;
 import edu.cuit.lushan.factory.AbstractFactory;
 import edu.cuit.lushan.factory.FactoryProducer;
 import edu.cuit.lushan.service.IUserService;
+import edu.cuit.lushan.utils.EmailUtil;
 import edu.cuit.lushan.utils.ResponseMessage;
 import edu.cuit.lushan.utils.UserAgentUtil;
+import edu.cuit.lushan.vo.EmailVO;
 import edu.cuit.lushan.vo.LoginVO;
 import edu.cuit.lushan.vo.RegisterVO;
 import io.swagger.annotations.ApiModel;
@@ -31,10 +35,12 @@ public class AccessHandler {
     UserAgentUtil userAgentUtil;
 
     AbstractFactory<User> abstractFactory = FactoryProducer.getFactory(FactoryProducer.FactoryName.USER);
+
     @DataLog
     @ApiOperation(value = "用户登录接口", tags = {"权限获取管理"})
     @PostMapping("/login")
-    public ResponseMessage login(HttpServletResponse response,@RequestBody LoginVO loginVO) {
+    @WebLog(hasToken = false)
+    public ResponseMessage login(HttpServletResponse response, @RequestBody LoginVO loginVO) {
         if ("".equals(loginVO.getEmail()) ||
                 "".equals(loginVO.getPassword()) ||
                 loginVO.getEmail() == null ||
@@ -53,15 +59,60 @@ public class AccessHandler {
     @PostMapping("/register")
     @DataLog
     public ResponseMessage register(@RequestBody RegisterVO registerVO) {
-        if (registerVO == null || BeanUtil.hasNullField(registerVO)){
+        if (registerVO == null || BeanUtil.hasNullField(registerVO)) {
             return ResponseMessage.errorMsg(2500, "User information cannot be null!", registerVO);
+        }
+        if (userService.selectByEmail(registerVO.getEmail()) != null) {
+            return ResponseMessage.existsError(registerVO);
         }
         AbstractFactory<User> abstractFactory = FactoryProducer.getFactory(FactoryProducer.FactoryName.USER);
         User user = abstractFactory.buildEntityByVO(new User(), registerVO);
         userService.save(user);
         user = userService.selectByEmail(user.getEmail());
         user.setModifyUserId(user.getId());
-        userService.updateById(user);
-        return ResponseMessage.success(user);
+        if (userService.updateById(user)) {
+            ResponseMessage responseMessage = ResponseMessage.success(registerVO);
+            responseMessage.setToken(userAgentUtil.sign(user.getId()));
+            return responseMessage;
+        } else {
+            return ResponseMessage.serverError(registerVO);
+        }
+    }
+
+    @ApiOperation(value = "为用户发送邮件", tags = {"权限获取管理"})
+    @PostMapping("/email")
+    @DataLog
+    @RequireRoles(RoleEnum.MANAGER)
+    public ResponseMessage emailTo(@RequestBody EmailVO emailVO) {
+        try {
+            if (emailVO.getType() == 0) {
+                EmailUtil.sendHtmlMail(emailVO.getEmail(), "账号审核已通过！", "恭喜您！账号申请已通过，功能已可正常使用！");
+            } else if (emailVO.getType() == 1) {
+                EmailUtil.sendHtmlMail(emailVO.getEmail(), "账号审核未通过！", emailVO.getMessage());
+            } else if (emailVO.getType() == 2) {
+                EmailUtil.sendCodeMail(emailVO.getEmail());
+            }
+            return ResponseMessage.success(emailVO);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseMessage.errorMsg(2500, e.getMessage(), emailVO);
+        }
+    }
+
+
+    @ApiOperation(value = "为用户发送邮件", tags = {"权限获取管理"})
+    @PostMapping("/email/resetPassword")
+    @DataLog
+    public ResponseMessage emailCode(@RequestBody EmailVO emailVO) {
+        try {
+            if (emailVO.getType() == 2) {
+                EmailUtil.sendCodeMail(emailVO.getEmail());
+                return ResponseMessage.success(emailVO);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseMessage.errorMsg(2500, e.getMessage(), emailVO);
+        }
+        return ResponseMessage.errorMsg(2500, "Mail type error！");
     }
 }

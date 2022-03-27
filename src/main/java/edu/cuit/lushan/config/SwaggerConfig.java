@@ -1,6 +1,5 @@
 package edu.cuit.lushan.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +20,9 @@ import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Configuration
-//@EnableSwagger2
-//@ComponentScan(basePackages = { "edu.cuit.lushan.controller" })//扫描的包路径
+@Configuration
+@EnableSwagger2
+@ComponentScan(basePackages = {"edu.cuit.lushan.controller"})//扫描的包路径
 public class SwaggerConfig {
 
     @Bean
@@ -50,7 +49,7 @@ public class SwaggerConfig {
     private List<Parameter> getParameterList() {
         ParameterBuilder tokenPar = new ParameterBuilder();
         List<Parameter> pars = new ArrayList<>();
-        tokenPar.name("userToken")
+        tokenPar.name("token")
                 .description("令牌")
                 .modelRef(new ModelRef(""))
                 .parameterType("header")

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class UserAuthorizationVO {
-    private Integer id;
+    private String email;
     private Integer accountStatus;
     private Integer roleId;
 }

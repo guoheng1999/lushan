@@ -2,19 +2,22 @@ package edu.cuit.lushan.aop;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import edu.cuit.lushan.annotation.WebLog;
 import edu.cuit.lushan.entity.SysLog;
+import edu.cuit.lushan.exception.AuthorizationException;
 import edu.cuit.lushan.service.ISysLogService;
 import edu.cuit.lushan.utils.ResponseMessage;
 import edu.cuit.lushan.utils.UserAgentUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.*;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
@@ -28,13 +31,15 @@ public class WebLogAspect {
     @Autowired
     ISysLogService sysLogService;
 
-    @Pointcut("execution(public * edu.cuit.lushan.controller.*.*(..))")
+//    @Pointcut("execution(public * edu.cuit.lushan.controller.*.*(..))")
+
+    @PostConstruct
     public void logPointCut() {
     }
 
-//    @Before("logPointCut()")
-    @AfterReturning(returning = "ret", pointcut = "logPointCut()")
-    public void afterReturning(JoinPoint joinPoint, Object ret) {
+
+    @AfterReturning(returning = "ret", pointcut = "@annotation(webLog)")
+    public void afterReturning(JoinPoint joinPoint, Object ret, WebLog webLog) {
         // 接收到请求，记录请求内容
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
@@ -45,8 +50,17 @@ public class WebLogAspect {
                 + joinPoint.getSignature().getName();
         String param = Arrays.toString(joinPoint.getArgs());
         String ip = getIP(request);
-        ResponseMessage responseMessage = ret == null?ResponseMessage.builder().build():(ResponseMessage) ret;
-        String userId = userAgentUtil.getUserId(request)==null? null :userAgentUtil.getUserId(request).toString();
+        ResponseMessage responseMessage = ret == null ? ResponseMessage.builder().build() : (ResponseMessage) ret;
+        // 判断请求是否携带token
+        System.err.println(classMethod);
+        String token = userAgentUtil.getToken(request);
+        System.err.println(webLog.hasToken());
+        if ((StrUtil.isEmpty(token)|| StrUtil.isBlank(token) )&& webLog.hasToken()) {
+            System.err.println("token= " + token);
+            throw new AuthorizationException("This request need a token!");
+        }
+        if ("null".equals(token)) throw new AuthorizationException("请不要乱搞！");
+        String userId = userAgentUtil.getUserId(request) == null ? null : userAgentUtil.getUserId(request).toString();
         SysLog sysLog = SysLog.builder().ip(ip)
                 .methodName(classMethod)
                 .requestParam(param)

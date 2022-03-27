@@ -2,6 +2,7 @@ package edu.cuit.lushan.controller;
 
 
 import edu.cuit.lushan.annotation.DataLog;
+import edu.cuit.lushan.annotation.WebLog;
 import edu.cuit.lushan.entity.DownloadLog;
 import edu.cuit.lushan.service.IDownloadLogService;
 import edu.cuit.lushan.utils.ResponseMessage;
@@ -28,6 +29,7 @@ public class DownloadLogController {
     @ApiOperation(value = "获取所有下载日志", tags = {"文件下载日志"})
     @GetMapping("/")
     @DataLog
+    @WebLog
     public ResponseMessage getAll() {
         return ResponseMessage.success(downloadLogService.list());
     }
@@ -35,6 +37,7 @@ public class DownloadLogController {
     @ApiOperation(value = "获取一个下载日志", tags = {"文件下载日志"})
     @GetMapping("/{downloadId}")
     @DataLog
+    @WebLog
     public ResponseMessage getOne(@PathVariable String downloadId) {
         DownloadLog downloadLog = downloadLogService.getById(downloadId);
         return ResponseMessage.success(downloadLog);
@@ -43,6 +46,7 @@ public class DownloadLogController {
     @ApiOperation(value = "添加下载日志", tags = {"文件下载日志"})
     @PostMapping("/")
     @DataLog
+    @WebLog
     public ResponseMessage register(@RequestBody DownloadLog downloadLog) {
         if (downloadLogService.save(downloadLog)) {
             return ResponseMessage.success(downloadLog);
@@ -54,6 +58,7 @@ public class DownloadLogController {
     @ApiOperation(value = "更改下载日志信息", tags = {"文件下载日志"})
     @PutMapping("/{downloadId}")
     @DataLog
+    @WebLog
     public ResponseMessage update(@PathVariable String downloadId, @RequestBody DownloadLog downloadLog) {
         //   暂未实现
         return ResponseMessage.success(downloadLog);
@@ -62,6 +67,7 @@ public class DownloadLogController {
     @ApiOperation(value = "删除下载日志", tags = {"文件下载日志"})
     @DeleteMapping("/{downloadId}")
     @DataLog
+    @WebLog
     public ResponseMessage delete(@PathVariable String downloadId) {
         downloadLogService.removeById(downloadId);
         return ResponseMessage.success(downloadId);

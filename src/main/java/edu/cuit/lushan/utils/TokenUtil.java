@@ -1,8 +1,5 @@
 package edu.cuit.lushan.utils;
 
-import cn.hutool.crypto.SecureUtil;
-import cn.hutool.crypto.symmetric.AES;
-import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import com.alibaba.fastjson.JSON;
 import edu.cuit.lushan.config.LushanConfig;
 import edu.cuit.lushan.entity.User;
@@ -22,7 +19,7 @@ public class TokenUtil {
     @Autowired
     IUserService userService;
 
-    public String sign(Integer userId){
+    public String sign(Integer userId) {
         User user = userService.getById(userId);
         Set<String> roleSet = new HashSet<>();
         switch (user.getRoleId()) {
@@ -41,7 +38,8 @@ public class TokenUtil {
                 .build();
         return AESUtil.encodeBase64(JSON.toJSONString(authorization));
     }
-    public Integer getUserId(String token){
+
+    public Integer getUserId(String token) {
 
         try {
             Authorization authorization = JSON.parseObject(AESUtil.decodeBase64(token)).toJavaObject(Authorization.class);

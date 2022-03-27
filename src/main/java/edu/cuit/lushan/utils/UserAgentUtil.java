@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+
 import javax.servlet.http.HttpServletRequest;
 
 @Component
@@ -91,6 +92,9 @@ public class UserAgentUtil {
 
     public Integer getUserId(HttpServletRequest request) {
         String token = getToken(request);
+        if (token == null) {
+            return null;
+        }
         Integer userId = tokenUtil.getUserId(token);
         return userId;
     }
@@ -118,12 +122,13 @@ public class UserAgentUtil {
                 }
         }
     }
-    public boolean hasRole(User user, RoleEnum roleEnum){
+
+    public boolean hasRole(User user, RoleEnum roleEnum) {
         try {
-            //  按照排序先后计算
+            //  按照排序先后计算0-user
             System.out.println(roleEnum.ordinal());
-            return roleEnum.ordinal() >= user.getRoleId();
-        }catch (Exception e){
+            return roleEnum.ordinal() <= user.getRoleId();
+        } catch (Exception e) {
             return false;
         }
     }

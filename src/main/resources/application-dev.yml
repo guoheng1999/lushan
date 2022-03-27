@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://10.23.107.96:3306/lushan?characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/lushan?characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: Gh19990624!
@@ -20,6 +20,11 @@ server:
     context-path: /lushan
 
 lushan:
-  data-root: E:/lushan_server/upload/data
+  history-data-root: E:/lushan_server/datasets/historyDatasets
+  history-dataset-picture: E:/lushan_server/datasets/historyDatasetsPicture
+  current-data-root: E:/lushan_server/datasets/currentDatasets
   proof-root: E:/lushan_server/upload/user_proof
+  buffer-root: http://10.23.107.96:8848/lushan_front/data/
   secret: "dfc1b985bc618ebbff54d08f3e067bc4" # jwt秘钥
+
+

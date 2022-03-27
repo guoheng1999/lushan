@@ -6,10 +6,10 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class FileUtil {
+public class FileUtils {
     final List list = Arrays.asList(new String[]{"jpg", "png", "gif", "jpeg"});
 
-    public boolean isPicture(String ext){
+    public boolean isPicture(String ext) {
         return list.contains(ext.toLowerCase());
     }
 }
