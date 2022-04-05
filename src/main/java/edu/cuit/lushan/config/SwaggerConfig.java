@@ -30,7 +30,7 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("edu.cuit.lushan"))
+//                .apis(RequestHandlerSelectors.basePackage("edu.cuit.lushan"))
                 .paths(PathSelectors.any())
                 .build()
                 .globalOperationParameters(this.getParameterList())

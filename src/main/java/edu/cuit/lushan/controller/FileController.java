@@ -1,6 +1,7 @@
 package edu.cuit.lushan.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.UUID;
@@ -162,6 +163,9 @@ public class FileController {
             }
 
             File file = FileUtil.file(lushanConfig.getHistoryDataRoot(), historyXlsxData.getPath(), String.format("%s.xlsx", historyXlsxData.getDataName()));
+            if(!file.exists()){
+                file = FileUtil.file(lushanConfig.getHistoryDataRoot(), historyXlsxData.getPath(), String.format("%s.xls", historyXlsxData.getDataName()));
+            }
             // 将文件写入输入流
             FileInputStream fileInputStream = new FileInputStream(file);
             InputStream fis = new BufferedInputStream(fileInputStream);
@@ -194,21 +198,21 @@ public class FileController {
     @ApiOperation(value = "下载现代数据", tags = {"文件下载上传"})
     public ResponseMessage downloadCurrentData(@RequestBody CurrentDataDownloadRequestVO currentDataDownloadRequestVO,
                                     HttpServletResponse response, HttpServletRequest request) {
-        try {
             if (BeanUtil.hasNullField(currentDataDownloadRequestVO)) {
                 throw new MyRuntimeException("Request data can not be empty!", currentDataDownloadRequestVO);
             }
-            List<CurrentData> currentDataList = currentDataService.getByDeviceIdAndDataLevelWithFromDayEndDay(
-                    currentDataDownloadRequestVO.getDeviceId(),
-                    currentDataDownloadRequestVO.getDataLevel(),
-                    currentDataDownloadRequestVO.getFromDay(),
-                    currentDataDownloadRequestVO.getEndDay()
-            );
+            // 判断时间区间是否超过一个月
+            if (DateUtil.betweenMonth(DateUtil.parseDate(currentDataDownloadRequestVO.getFromDay()).toJdkDate(),
+                    DateUtil.parseDate(currentDataDownloadRequestVO.getFromDay()).toJdkDate(), false) > 1) {
+                throw new MyRuntimeException("The time interval can not be more than one month!");
+            }
+            List<CurrentData> currentDataList = currentDataService.getByDownloadVO(currentDataDownloadRequestVO);
             if (currentDataList.isEmpty()) {
                 System.err.println(currentDataDownloadRequestVO);
                 return ResponseMessage.notFound(currentDataDownloadRequestVO);
             }
-            List<File> fileList = new LinkedList<>();
+        System.err.println(currentDataList.size());
+        List<File> fileList = new LinkedList<>();
             currentDataList.forEach(e -> {
                 File file = FileUtil.file(lushanConfig.getCurrentDataRoot(), String.format("%s/%s%s", e.getPath(), e.getDataName(), e.getFileType()));
                 if (file.exists()) {
@@ -229,10 +233,6 @@ public class FileController {
             Thread thread = new Thread(downLoadFileThread);
             thread.start();
             return ResponseMessage.success(currentDataDownloadRequestVO);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return ResponseMessage.serverError(currentDataDownloadRequestVO);
-        }
     }
 
 
@@ -301,7 +301,7 @@ public class FileController {
             fis.read(buffer);
             fis.close();
             OutputStream outputStream = getOutputStream(response,
-                    historyPictureData.getPicName(),
+                    historyPictureData.getHistoryXlsxDataName() + "_" +historyPictureData.getPicName(),
                     file,
                     "inline;filename=");
             DownloadLog downloadLog = DownloadLog.builder()
