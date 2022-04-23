@@ -55,6 +55,28 @@ public class AccessHandler {
         return ResponseMessage.success(loginVO);
     }
 
+    @DataLog
+    @ApiOperation(value = "管理员登陆接口", tags = {"权限获取管理"})
+    @PostMapping("/manager/login")
+    @WebLog(hasToken = false)
+    public ResponseMessage managerLogin(HttpServletResponse response, @RequestBody LoginVO loginVO) {
+        if ("".equals(loginVO.getEmail()) ||
+                "".equals(loginVO.getPassword()) ||
+                loginVO.getEmail() == null ||
+                loginVO.getPassword() == null) {
+            return ResponseMessage.successCodeMsgData(2001, "The email and password fields cannot be empty!", loginVO);
+        }
+        User user = userService.loginByEmail(loginVO.getEmail(), loginVO.getPassword());
+        if (user == null) {
+            return ResponseMessage.successCodeMsgData(2404, "User is not found or password is not validated!", loginVO);
+        }
+        if (user.getRoleId() < RoleEnum.MANAGER.getCode()) {
+            return ResponseMessage.successCodeMsgData(2500, "Insufficient permissions!", loginVO);
+        }
+        loginVO.setToken(userAgentUtil.sign(user.getId()));
+        return ResponseMessage.success(loginVO);
+    }
+
     @ApiOperation(value = "用户注册接口", tags = {"权限获取管理"})
     @PostMapping("/register")
     @DataLog

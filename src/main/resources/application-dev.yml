@@ -26,5 +26,6 @@ lushan:
   proof-root: E:/lushan_server/upload/user_proof
   buffer-root: http://10.23.107.96:8848/lushan_front/data/
   secret: "dfc1b985bc618ebbff54d08f3e067bc4" # jwt秘钥
+  comment-root: E:/lushan_server/upload/comment
 
 

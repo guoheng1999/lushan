@@ -16,9 +16,11 @@ import edu.cuit.lushan.utils.CodeUtil;
 import edu.cuit.lushan.utils.FileUtils;
 import edu.cuit.lushan.utils.ResponseMessage;
 import edu.cuit.lushan.utils.UserAgentUtil;
+import edu.cuit.lushan.vo.CommentFileVO;
 import edu.cuit.lushan.vo.CurrentDataDownloadRequestVO;
 import edu.cuit.lushan.vo.FileVO;
 import edu.cuit.lushan.vo.UserProofVO;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,10 @@ public class FileController {
     IHistoryXlsxDataService historyXlsxDataService;
     @Autowired
     IHistoryPictureDataService historyPictureDataService;
+    @Autowired
+    ICommentFileService commentFileService;
+    @Autowired
+    ICommentService commentService;
 
 //    @PostMapping("/upload/data")
 //    @DataLog
@@ -98,6 +104,33 @@ public class FileController {
                     .fileType(userProof.getFileType())
                     .build();
             return ResponseMessage.successCodeMsgData(2000, "Upload proof file success!", userProofVO);
+        } else {
+            return ResponseMessage.errorMsg(2500, "Server error!");
+        }
+    }
+
+
+    @PostMapping("/upload/commentFile")
+    @DataLog
+    @WebLog
+    @CrossOrigin
+    @ApiOperation(value = "用户上传数据反馈文件", tags = {"文件下载上传"})
+//    @ApiImplicitParam(name = "commentId", value = "数据反馈id", required = true, dataType = "int", paramType = "header")
+    public ResponseMessage uploadCommentFile(@RequestParam("file") MultipartFile multipartFile, @RequestParam("commentId") String commentId,HttpServletRequest request) throws Exception {
+        FileVO fileVO = getFileVO(multipartFile, lushanConfig.getCommentRoot(), false);
+        CommentFile commentFile = new CommentFile();
+        commentFile.setCommentId(userAgentUtil.getUserId(request))
+                .setFileName(fileVO.getFileName())
+                .setModifyUserId(userAgentUtil.getUserId(request))
+                .setCommentId(Integer.valueOf(commentId))
+                .setFileType(fileVO.getFileType());
+        if (commentFileService.save(commentFile)) {
+            CommentFileVO commentFileVO = CommentFileVO.builder()
+                    .fileName(commentFile.getFileName())
+                    .commentId(commentFile.getCommentId())
+                    .fileType(commentFile.getFileType())
+                    .build();
+            return ResponseMessage.successCodeMsgData(2000, "Upload comment file success!", commentFileVO);
         } else {
             return ResponseMessage.errorMsg(2500, "Server error!");
         }
@@ -236,21 +269,25 @@ public class FileController {
     }
 
 
-    @GetMapping("/download/user/proof")
+    @GetMapping("/download/comment/{commentFileName}")
     @DataLog
     @WebLog(hasToken = false)
     @CrossOrigin
-    @ApiOperation(value = "下载用户审核文件", tags = {"文件下载上传"})
-    public void downloadUserProof(String fileName, HttpServletResponse response, HttpServletRequest request) {
+    @ApiOperation(value = "下载数据反馈文件", tags = {"文件下载上传"})
+    public void downloadUserProof(@PathVariable String commentFileName, HttpServletResponse response, HttpServletRequest request) {
         try {
-
-            UserProof userProof = userProofService.getByUserProofFileName(fileName);
-            if (userProof == null) {
+            if (commentFileName == null) {
                 return;
             }
-            // path是指想要下载的文件的路径
-            String fileFullName = userProof.getFileName() + "." + userProof.getFileType();
-            File file = new File(lushanConfig.getProofRoot(), fileFullName);
+            CommentFile commentFile = commentFileService.selectByFileName(commentFileName);
+            if (commentFile == null) {
+                return;
+            }
+            File file = FileUtil.file(lushanConfig.getCommentRoot(), String.format("%s.%s",  commentFile.getFileName(), commentFile.getFileType()));
+            if (!file.exists()) {
+                System.err.println(file.getPath());
+                return;
+            }
             // 将文件写入输入流
             FileInputStream fileInputStream = new FileInputStream(file);
             InputStream fis = new BufferedInputStream(fileInputStream);
@@ -258,12 +295,12 @@ public class FileController {
             fis.read(buffer);
             fis.close();
             OutputStream outputStream = getOutputStream(response,
-                    fileFullName,
+                    commentFileName + commentFile.getFileType(),
                     file,
                     "inline;filename=");
 
             DownloadLog downloadLog = DownloadLog.builder()
-                    .downloadFileName(userProof.getFileName())
+                    .downloadFileName(commentFile.getFileName())
                     .downloadIp(userAgentUtil.getIpAddress(request))
                     .downloadTime(LocalDateTimeUtil.of(new Date()))
                     .downloadUserId(userAgentUtil.getUserId(request))
@@ -276,47 +313,6 @@ public class FileController {
         }
     }
 
-
-
-    @GetMapping("/download/historyData/picture")
-    @DataLog
-    @WebLog(hasToken = false)
-    @CrossOrigin
-    @ApiOperation(value = "下载历史数据原始记录", tags = {"文件下载上传"})
-    public void download(@RequestParam String picName,
-                         @RequestParam String dataName,
-                         HttpServletResponse response, HttpServletRequest request) {
-        try {
-
-            HistoryPictureData historyPictureData = historyPictureDataService.getByHistoryNameAndPicName(dataName, picName);
-            if (historyPictureData == null) {
-                return;
-            }
-            // path是指想要下载的文件的路径
-            File file = FileUtil.file(lushanConfig.getHistoryDatasetPicture(), historyPictureData.getPath(), historyPictureData.getPicName());
-            // 将文件写入输入流
-            FileInputStream fileInputStream = new FileInputStream(file);
-            InputStream fis = new BufferedInputStream(fileInputStream);
-            byte[] buffer = new byte[fis.available()];
-            fis.read(buffer);
-            fis.close();
-            OutputStream outputStream = getOutputStream(response,
-                    historyPictureData.getHistoryXlsxDataName() + "_" +historyPictureData.getPicName(),
-                    file,
-                    "inline;filename=");
-            DownloadLog downloadLog = DownloadLog.builder()
-                    .downloadFileName(historyPictureData.getPicName())
-                    .downloadIp(userAgentUtil.getIpAddress(request))
-                    .downloadTime(LocalDateTimeUtil.of(new Date()))
-                    .downloadUserId(userAgentUtil.getUserId(request))
-                    .build();
-            downloadLogService.save(downloadLog);
-            outputStream.write(buffer);
-            outputStream.flush();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
 
 
     private OutputStream getOutputStream(HttpServletResponse response, String fileFullName, File file, String s) throws IOException {

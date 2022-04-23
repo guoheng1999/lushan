@@ -22,12 +22,13 @@ server:
   servlet:
     context-path: /lushan
 lushan:
-  history-data-root: /home/lushan_datasets/datasets/historyDatasets
-  history-dataset-picture: /home/lushan_datasets/datasets/historyDatasetsPicture
-  current-data-root: /home/lushan_datasets/datasets/currentDatasets
-  proof-root: /home/lushan_datasets/upload/user_proof
-  buffer-data-root: /home/lushan_datasets/download
-  link-root: http://106.12.109.129:8851/
+  history-data-root: /www/wwwroot/lushan_data/lushan_datasets/historyDatasets
+  history-dataset-picture: /www/wwwroot/lushan_data/lushan_datasets/historyDatasetsPicture
+  current-data-root: /www/wwwroot/lushan_data/lushan_datasets/currentDatasets
+  proof-root: /www/wwwroot/lushan_data/upload/user_proof
+  buffer-data-root: /www/wwwroot/lushan_data/download
+  comment-files-root: /www/wwwroot/lushan_data/upload/comment
+  link-root: http://106.13.10.209:8851/
   secret: "dfc1b985bc618ebbff54d08f3e067bc4" # jwt秘钥
 
 

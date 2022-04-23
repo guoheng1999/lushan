@@ -15,6 +15,7 @@ public class EntityMetaObjectHandler implements MetaObjectHandler {
         this.setFieldValByName("accountStatus", 0, metaObject);
         this.setFieldValByName("roleId", 0, metaObject);
         this.setFieldValByName("isDelete", 0, metaObject);
+        this.setFieldValByName("isRead", 0, metaObject);
 
     }
 

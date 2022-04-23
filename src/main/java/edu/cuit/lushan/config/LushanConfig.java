@@ -15,4 +15,5 @@ public class LushanConfig {
     private String bufferDataRoot;
     private String linkRoot;
     private String secret;
+    private String commentRoot;
 }
