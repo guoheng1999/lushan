@@ -16,10 +16,7 @@ import edu.cuit.lushan.utils.CodeUtil;
 import edu.cuit.lushan.utils.FileUtils;
 import edu.cuit.lushan.utils.ResponseMessage;
 import edu.cuit.lushan.utils.UserAgentUtil;
-import edu.cuit.lushan.vo.CommentFileVO;
-import edu.cuit.lushan.vo.CurrentDataDownloadRequestVO;
-import edu.cuit.lushan.vo.FileVO;
-import edu.cuit.lushan.vo.UserProofVO;
+import edu.cuit.lushan.vo.*;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +36,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequestMapping("/file")
+@CrossOrigin
 public class FileController {
 
     @Autowired
@@ -63,27 +61,6 @@ public class FileController {
     ICommentFileService commentFileService;
     @Autowired
     ICommentService commentService;
-
-//    @PostMapping("/upload/data")
-//    @DataLog
-//    @WebLog
-//    @CrossOrigin
-//    public ResponseMessage uploadData(MultipartFile multipartFile, HttpServletRequest request) throws Exception {
-//        FileVO fileVO = getFileVO(multipartFile, lushanConfig.getDataRoot(), false);
-//        DataFile dataFile = DataFile.builder()
-//                .dataName(fileVO.getDataName())
-//                .fileName(fileVO.getFileName())
-//                .fileType(fileVO.getFileType())
-//                .modifyUserId(userAgentUtil.getUserId(request))
-//                .deviceId(request.getIntHeader("deviceId"))
-//                .build();
-//        if (dataFileService.save(dataFile)) {
-//            return ResponseMessage.success(fileVO);
-//        } else {
-//            return ResponseMessage.errorMsg(2500, "Server Error!", fileVO);
-//        }
-//    }
-
     @PostMapping("/upload/user/proof")
     @DataLog
     @WebLog
@@ -136,35 +113,39 @@ public class FileController {
         }
     }
 
-/*
-    @GetMapping("/download/data")
+    @PostMapping("/download/historyData")
     @DataLog
-    @WebLog
+    @WebLog(hasToken = false)
     @CrossOrigin
-    public void downloadData(String fileName, HttpServletResponse response, HttpServletRequest request) {
+    @ApiOperation(value = "下载历史数据", tags = {"文件下载上传"})
+    public void downloadHistoryData(@RequestBody HistoryDataDownloadVO historyDataDownloadVO, HttpServletResponse response, HttpServletRequest request) {
         try {
-            DataFile dataFile = dataFileService.getOneByDataFileName(fileName);
-            if (dataFile == null) {
-                log.info("not found");
+            if (BeanUtil.hasNullField(historyDataDownloadVO)) {
+                throw new MyRuntimeException("The request data can not be empty!");
+            }
+
+            HistoryXlsxData historyXlsxData = historyXlsxDataService.getByName(historyDataDownloadVO.getDataName());
+            if (historyXlsxData == null) {
                 return;
             }
-            // path是指想要下载的文件的路径
-            File file = new File(lushanConfig.getDataRoot(),
-                    dataFile.getFileName() + "." + dataFile.getFileType());
+
+            File file = FileUtil.file(lushanConfig.getHistoryDataRoot(), historyXlsxData.getPath(), String.format("%s.xlsx", historyXlsxData.getDataName()));
+            if(!file.exists()){
+                file = FileUtil.file(lushanConfig.getHistoryDataRoot(), historyXlsxData.getPath(), String.format("%s.xls", historyXlsxData.getDataName()));
+            }
             // 将文件写入输入流
             FileInputStream fileInputStream = new FileInputStream(file);
             InputStream fis = new BufferedInputStream(fileInputStream);
             byte[] buffer = new byte[fis.available()];
             fis.read(buffer);
             fis.close();
-
-            // 清空response
             OutputStream outputStream = getOutputStream(response,
-                    dataFile.getDataName() + "." + dataFile.getFileType(),
+                    file.getName(),
                     file,
-                    "attachment;filename=");
+                    "inline;filename=");
+
             DownloadLog downloadLog = DownloadLog.builder()
-                    .downloadFileName(dataFile.getFileName())
+                    .downloadFileName(historyXlsxData.getDataName())
                     .downloadIp(userAgentUtil.getIpAddress(request))
                     .downloadTime(LocalDateTimeUtil.of(new Date()))
                     .downloadUserId(userAgentUtil.getUserId(request))
@@ -176,28 +157,33 @@ public class FileController {
             ex.printStackTrace();
         }
     }
-*/
 
 
-    @GetMapping("/download/historyData")
+    @PostMapping("/download/historyData/picture")
     @DataLog
     @WebLog(hasToken = false)
     @CrossOrigin
-    @ApiOperation(value = "下载历史数据", tags = {"文件下载上传"})
-    public void downloadHistoryData(String dataName, HttpServletResponse response, HttpServletRequest request) {
+    @ApiOperation(value = "下载历史数据原始记录", tags = {"文件下载上传"})
+    public void downloadHistoryData(@RequestBody HistoryPictureDownloadVO historyPictureDownloadVO,HttpServletResponse response, HttpServletRequest request) {
         try {
-            if (dataName == null || dataName.equals("")) {
+            if (BeanUtil.hasNullField(historyPictureDownloadVO)) {
                 throw new MyRuntimeException("The request data can not be empty!");
             }
 
-            HistoryXlsxData historyXlsxData = historyXlsxDataService.getByName(dataName);
+            HistoryXlsxData historyXlsxData = historyXlsxDataService.getByName(historyPictureDownloadVO.getDataName());
             if (historyXlsxData == null) {
                 return;
             }
-
-            File file = FileUtil.file(lushanConfig.getHistoryDataRoot(), historyXlsxData.getPath(), String.format("%s.xlsx", historyXlsxData.getDataName()));
+            HistoryPictureData historyPictureData = historyPictureDataService.getByHistoryNameAndPicName(
+                    historyPictureDownloadVO.getDataName(), historyPictureDownloadVO.getPicName());
+            System.err.println(historyPictureData);
+            File file = FileUtil.file(
+                    lushanConfig.getHistoryDatasetPicture(),
+                    historyPictureData.getHistoryXlsxDataName(),
+                    historyPictureData.getPicName());
+            System.err.println(file.getPath());
             if(!file.exists()){
-                file = FileUtil.file(lushanConfig.getHistoryDataRoot(), historyXlsxData.getPath(), String.format("%s.xls", historyXlsxData.getDataName()));
+                return;
             }
             // 将文件写入输入流
             FileInputStream fileInputStream = new FileInputStream(file);
@@ -269,17 +255,17 @@ public class FileController {
     }
 
 
-    @GetMapping("/download/comment/{commentFileName}")
+    @PostMapping("/download/comment")
     @DataLog
     @WebLog(hasToken = false)
     @CrossOrigin
     @ApiOperation(value = "下载数据反馈文件", tags = {"文件下载上传"})
-    public void downloadUserProof(@PathVariable String commentFileName, HttpServletResponse response, HttpServletRequest request) {
+    public void downloadCommentFile(@RequestBody CommentFileDowmloadVO commentFileDowmloadVO, HttpServletResponse response, HttpServletRequest request) {
         try {
-            if (commentFileName == null) {
+            if (commentFileDowmloadVO == null) {
                 return;
             }
-            CommentFile commentFile = commentFileService.selectByFileName(commentFileName);
+            CommentFile commentFile = commentFileService.selectByFileName(commentFileDowmloadVO.getFileName());
             if (commentFile == null) {
                 return;
             }
@@ -295,12 +281,57 @@ public class FileController {
             fis.read(buffer);
             fis.close();
             OutputStream outputStream = getOutputStream(response,
-                    commentFileName + commentFile.getFileType(),
+                    String.format("%s.%s",  commentFile.getFileName(), commentFile.getFileType()),
                     file,
                     "inline;filename=");
 
             DownloadLog downloadLog = DownloadLog.builder()
                     .downloadFileName(commentFile.getFileName())
+                    .downloadIp(userAgentUtil.getIpAddress(request))
+                    .downloadTime(LocalDateTimeUtil.of(new Date()))
+                    .downloadUserId(userAgentUtil.getUserId(request))
+                    .build();
+            downloadLogService.save(downloadLog);
+            outputStream.write(buffer);
+            outputStream.flush();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+
+    @PostMapping("/download/user/proof")
+    @DataLog
+    @WebLog(hasToken = false)
+    @CrossOrigin
+    @ApiOperation(value = "下载用户审核资料", tags = {"文件下载上传"})
+    public void downloadUserProof(@RequestBody UserProofDownloadVO userProofDownloadVO, HttpServletResponse response, HttpServletRequest request) {
+        try {
+            if (userProofDownloadVO == null || BeanUtil.hasNullField(userProofDownloadVO)) {
+                return;
+            }
+            UserProof userProof = userProofService.getByUserProofFileName(userProofDownloadVO.getFileName());
+            if (userProof == null) {
+                return;
+            }
+            File file = FileUtil.file(lushanConfig.getProofRoot(), String.format("%s.%s",  userProof.getFileName(), userProof.getFileType()));
+            if (!file.exists()) {
+                System.err.println(file.getPath());
+                return;
+            }
+            // 将文件写入输入流
+            FileInputStream fileInputStream = new FileInputStream(file);
+            InputStream fis = new BufferedInputStream(fileInputStream);
+            byte[] buffer = new byte[fis.available()];
+            fis.read(buffer);
+            fis.close();
+            OutputStream outputStream = getOutputStream(response,
+                    String.format("%s.%s",  userProof.getFileName(), userProof.getFileType()),
+                    file,
+                    "inline;filename=");
+
+            DownloadLog downloadLog = DownloadLog.builder()
+                    .downloadFileName(userProof.getFileName())
                     .downloadIp(userAgentUtil.getIpAddress(request))
                     .downloadTime(LocalDateTimeUtil.of(new Date()))
                     .downloadUserId(userAgentUtil.getUserId(request))

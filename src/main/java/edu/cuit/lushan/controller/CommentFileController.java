@@ -33,6 +33,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/commentFile")
+@CrossOrigin
 public class CommentFileController {
 
     @Autowired
@@ -44,6 +45,7 @@ public class CommentFileController {
     @GetMapping("/")
     @WebLog
     @RequireRoles(RoleEnum.MANAGER)
+    @CrossOrigin
     public ResponseMessage getAll() {
         return ResponseMessage.success(commentFileService.list());
     }
@@ -53,6 +55,7 @@ public class CommentFileController {
     @GetMapping("/commentId/{commentId}")
     @WebLog
     @RequireRoles(RoleEnum.MANAGER)
+    @CrossOrigin
     public ResponseMessage getByCommentId(@PathVariable Integer commentId) {
         if (commentId == null){
             throw new MyRuntimeException("commentId can not be null!");
@@ -81,6 +84,7 @@ public class CommentFileController {
     @DeleteMapping("/{commentId}")
     @WebLog
     @RequireRoles(RoleEnum.MANAGER)
+    @CrossOrigin
     public ResponseMessage delete(@PathVariable Integer commentId) {
         if (commentId == null){
             throw new MyRuntimeException("commentId can not be null!");

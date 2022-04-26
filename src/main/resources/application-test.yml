@@ -27,7 +27,7 @@ lushan:
   current-data-root: /www/wwwroot/lushan_data/lushan_datasets/currentDatasets
   proof-root: /www/wwwroot/lushan_data/upload/user_proof
   buffer-data-root: /www/wwwroot/lushan_data/download
-  comment-files-root: /www/wwwroot/lushan_data/upload/comment
+  comment-root: /www/wwwroot/lushan_data/upload/comment
   link-root: http://106.13.10.209:8851/
   secret: "dfc1b985bc618ebbff54d08f3e067bc4" # jwt秘钥
 
