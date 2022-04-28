@@ -102,7 +102,7 @@ public class ResponseMessage implements Serializable {
      * @return
      */
     public static ResponseMessage serverError(Object data) {
-        return new ResponseMessage(false, 2500, "Server Error!", data);
+        return new ResponseMessage(false, 2500, "系统未知错误！请联系管理员。", data);
     }
 
     /**
@@ -111,7 +111,7 @@ public class ResponseMessage implements Serializable {
      * @return
      */
     public static ResponseMessage notFound(Object data) {
-        return new ResponseMessage(false, 2404, "Current data not found!", data);
+        return new ResponseMessage(false, 2404, "未找到该数据!", data);
     }
 
     /**
@@ -120,7 +120,7 @@ public class ResponseMessage implements Serializable {
      * @return
      */
     public static ResponseMessage nullError() {
-        return new ResponseMessage(false, 2404, "Request data cannot be empty!", null);
+        return nullError(null);
     }
 
     /**
@@ -129,7 +129,7 @@ public class ResponseMessage implements Serializable {
      * @return
      */
     public static ResponseMessage nullError(Object data) {
-        return new ResponseMessage(false, 2404, "Request data cannot be empty!", data);
+        return new ResponseMessage(false, 2404, "请求数据不可为空!", data);
     }
 
     /**
@@ -138,7 +138,7 @@ public class ResponseMessage implements Serializable {
      * @return
      */
     public static ResponseMessage existsError(Object data) {
-        return new ResponseMessage(false, 2500, "Current data already exists!", data);
+        return new ResponseMessage(false, 2500, "当前数据已存在！", data);
     }
 
 

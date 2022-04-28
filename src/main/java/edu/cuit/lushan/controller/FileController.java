@@ -1,6 +1,7 @@
 package edu.cuit.lushan.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.io.FileUtil;
@@ -218,18 +219,18 @@ public class FileController {
     public ResponseMessage downloadCurrentData(@RequestBody CurrentDataDownloadRequestVO currentDataDownloadRequestVO,
                                     HttpServletResponse response, HttpServletRequest request) {
             if (BeanUtil.hasNullField(currentDataDownloadRequestVO)) {
-                throw new MyRuntimeException("Request data can not be empty!", currentDataDownloadRequestVO);
+                throw new MyRuntimeException("请求数据不可为空！", currentDataDownloadRequestVO);
             }
             // 判断时间区间是否超过一个月
-            if (DateUtil.betweenMonth(DateUtil.parseDate(currentDataDownloadRequestVO.getFromDay()).toJdkDate(),
-                    DateUtil.parseDate(currentDataDownloadRequestVO.getFromDay()).toJdkDate(), false) > 1) {
-                throw new MyRuntimeException("The time interval can not be more than one month!");
-            }
-            List<CurrentData> currentDataList = currentDataService.getByDownloadVO(currentDataDownloadRequestVO);
-            if (currentDataList.isEmpty()) {
-                System.err.println(currentDataDownloadRequestVO);
-                return ResponseMessage.notFound(currentDataDownloadRequestVO);
-            }
+        long fromTime = DateUtil.parseDate(currentDataDownloadRequestVO.getFromDay()).getTime();
+        long endTime = DateUtil.parseDate(currentDataDownloadRequestVO.getEndDay()).getTime();
+        if (endTime - fromTime > 31L * 24 * 60 * 60 * 1000) { throw new MyRuntimeException("对不起，下载的数据时间区间不能超过一个月！"); }
+
+        List<CurrentData> currentDataList = currentDataService.getByDownloadVO(currentDataDownloadRequestVO);
+        if (currentDataList.isEmpty()) {
+            System.err.println(currentDataDownloadRequestVO);
+            return ResponseMessage.notFound(currentDataDownloadRequestVO);
+        }
         System.err.println(currentDataList.size());
         List<File> fileList = new LinkedList<>();
             currentDataList.forEach(e -> {
@@ -376,8 +377,8 @@ public class FileController {
         String newName = UUID.randomUUID().toString();
         // requirePicture是确定是否需要判断为图片格式，当其为真时为需要判断，则进入isPicture方法中。
         // 否则表达式为假，跳过判断。
-        if (requirePicture && !fileUtils.isPicture(ext)) {
-            throw new Exception("User proof must be jpg, jpeg, png, pdf.");
+        if (requirePicture && !fileUtils.isPicture(ext) && !fileUtils.isPdf(ext)) {
+            throw new Exception("对不起，文件格式只能为jpg, jpeg, png, pdf！");
         }
         File file = new File(folder, newName + "." + ext);
         multipartFile.transferTo(file);

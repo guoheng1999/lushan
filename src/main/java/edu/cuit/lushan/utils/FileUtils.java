@@ -12,4 +12,8 @@ public class FileUtils {
     public boolean isPicture(String ext) {
         return list.contains(ext.toLowerCase());
     }
+
+    public boolean isPdf(String ext) {
+        return ext.equalsIgnoreCase("pdf");
+    }
 }
