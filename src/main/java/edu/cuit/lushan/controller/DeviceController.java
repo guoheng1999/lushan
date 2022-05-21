@@ -59,7 +59,7 @@ public class DeviceController {
     public ResponseMessage getOne(@PathVariable String deviceId) {
         Device device = deviceService.getById(deviceId);
         if (device == null) {
-            return ResponseMessage.successCodeMsgData(2404, "Device not found!", deviceId);
+            return ResponseMessage.successCodeMsgData(2404, "没有查询到该设备的信息。", deviceId);
         }
         DeviceInfoVO deviceVO = DeviceInfoVO.builder()
                 .description(device.getDescription())
@@ -72,7 +72,7 @@ public class DeviceController {
     @ApiOperation(value = "添加设备信息", tags = {"设备管理"})
     @PostMapping("/")
     @DataLog
-    @WebLog
+//    @WebLog
     public ResponseMessage register(@RequestBody DeviceInfoVO deviceVO, HttpServletRequest request) {
         Device device = Device.builder().deviceName(deviceVO.getDeviceName())
                 .description(deviceVO.getDescription())
@@ -81,40 +81,40 @@ public class DeviceController {
         if (deviceService.save(device)) {
             return ResponseMessage.success(deviceVO);
         } else {
-            return ResponseMessage.errorMsg(2500, "Server error!", deviceVO);
+            return ResponseMessage.serverError(deviceVO);
         }
     }
 
     @ApiOperation(value = "更改设备信息", tags = {"设备管理"})
     @PutMapping("/")
     @DataLog
-    @WebLog
+//    @WebLog
     public ResponseMessage update(@RequestBody DeviceInfoVO deviceVO) {
         Device device = deviceService.getById(deviceVO.getId());
         if (device == null) {
-            return ResponseMessage.errorMsg(2404, "Device not found!", deviceVO);
+            return ResponseMessage.errorMsg(2404, "没有查询到该设备的信息。", deviceVO);
         }
         BeanUtil.copyProperties(deviceVO, device,
                 CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
         if (deviceService.updateById(device)) {
             return ResponseMessage.success(deviceVO);
         } else {
-            return ResponseMessage.errorMsg(2500, "Server error!", deviceVO);
+            return ResponseMessage.serverError(deviceVO);
         }
     }
 
     @ApiOperation(value = "删除设备信息", tags = {"设备管理"})
     @DeleteMapping("/{deviceId}")
     @DataLog
-    @WebLog
+//    @WebLog
     public ResponseMessage delete(@PathVariable String deviceId) {
         if (deviceService.getById(deviceId) == null) {
-            return ResponseMessage.errorMsg(2500, "The device is not found!", deviceId);
+            return ResponseMessage.errorMsg(2500, "没有查询到该设备的信息。", deviceId);
         }
         if (deviceService.removeById(deviceId)) {
             return ResponseMessage.success(deviceId);
         } else {
-            return ResponseMessage.errorMsg(2500, "Server Error!", deviceId);
+            return ResponseMessage.serverError(deviceId);
         }
     }
 }

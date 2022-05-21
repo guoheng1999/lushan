@@ -29,14 +29,14 @@ public class SysLogDetailController {
 
     @ApiOperation(value = "查询所有日志详情", notes = "", tags = {"日志详情管理"})
     @GetMapping("/")
-    @WebLog
+//    @WebLog
     public ResponseMessage all() {
         return ResponseMessage.success(sysLogDetailService.list());
     }
 
     @ApiOperation(value = "查询单个日志的详情", tags = {"日志详情管理"})
     @GetMapping("/{logId}")
-    @WebLog
+//    @WebLog
     public ResponseMessage one(@PathVariable String logId) {
         List<SysLogDetail> sysLogDetailList = sysLogDetailService.getBaseMapper().selectList(new QueryWrapper<SysLogDetail>().eq("log_id", logId));
         return ResponseMessage.success(sysLogDetailList);

@@ -57,7 +57,7 @@ public class UserController {
     @ApiOperation(value = "获取所有已通过的用户", tags = {"用户管理"})
     @GetMapping("/all")
     @RequireRoles(value = RoleEnum.MANAGER)
-    @WebLog
+//    @WebLog
     public ResponseMessage getAll() {
         List list = new ArrayList();
         userService.selectAllUser().forEach(
@@ -69,7 +69,7 @@ public class UserController {
     @DataLog
     @ApiOperation(value = "查询所有的待审核用户", tags = {"用户管理"})
     @GetMapping("/reviewed/all")
-    @WebLog
+//    @WebLog
     @RequireRoles(RoleEnum.MANAGER)
     public ResponseMessage getAllUnderReviewed() {
         return ResponseMessage.success(userService.selectAllUnderReviewed());
@@ -79,7 +79,7 @@ public class UserController {
     @DataLog
     @ApiOperation(value = "查询所有被封禁的用户", tags = {"用户管理"})
     @GetMapping("/banned/all")
-    @WebLog
+//    @WebLog
     @RequireRoles(RoleEnum.MANAGER)
     public ResponseMessage getAllBanedUser() {
         return ResponseMessage.success(userService.selectAllBanedUser());
@@ -87,7 +87,7 @@ public class UserController {
 
     @ApiOperation(value = "获取一个用户的信息", tags = {"用户管理"})
     @GetMapping("/{email}")
-    @WebLog
+//    @WebLog
     public ResponseMessage getOne(@PathVariable String email) {
         User user = userService.selectByEmail(email);
         if (user == null) {
@@ -101,7 +101,7 @@ public class UserController {
     @ApiOperation(value = "添加用户", tags = {"用户管理"})
     @PostMapping("/")
     @DataLog
-    @WebLog
+//    @WebLog
     public ResponseMessage add(@RequestBody RegisterVO registerVO,
                                HttpServletRequest request) {
         if (registerVO == null || BeanUtil.hasNullField(registerVO)) {
@@ -121,7 +121,7 @@ public class UserController {
     @DataLog
     @ApiOperation(value = "更新用户基本信息", tags = {"用户管理"})
     @PutMapping("/{email}")
-    @WebLog
+//    @WebLog
     public ResponseMessage update(@PathVariable String email,
                                   @RequestBody UserInfoVO releaseVersionUserInfo,
                                   HttpServletRequest request) {
@@ -141,7 +141,7 @@ public class UserController {
     @DataLog
     @ApiOperation(value = "修改用户密码", tags = {"用户管理"})
     @PutMapping("/password")
-    @WebLog(hasToken = false)
+//    @WebLog(hasToken = false)
     public ResponseMessage changePassword(
             @RequestBody UserPasswordVO userPasswordVO,
             HttpServletRequest request) {
@@ -155,14 +155,14 @@ public class UserController {
         if (userPasswordVO.getCode() == null) {
             if (!userAgentUtil.hasRole(userService.getById(userAgentUtil.getUserId(request)),
                     RoleEnum.MANAGER)) {
-                throw new AuthorizationException(String.format("The current operation requires [%s] or higher privileges.", RoleEnum.MANAGER.name()));
+                throw new AuthorizationException(String.format("无操作权限，请联系管理员！", RoleEnum.MANAGER.name()));
             }
         }
         // 从redis数据库中取出存放的code
         String code = (String) redisUtil.get(userPasswordVO.getEmail(), String.class);
         // code 为空或code比对不成功返回出错
         if (code == null || !code.equals(userPasswordVO.getCode())) {
-            throw new AuthorizationException("The current verification code is invalid or incorrect!");
+            throw new AuthorizationException("验证码错误！");
         }
         BeanUtil.copyProperties(userPasswordVO, oldUser,
                 CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
@@ -176,7 +176,7 @@ public class UserController {
     @DataLog
     @ApiOperation(value = "修改用户组织机构", tags = {"用户管理"})
     @PutMapping("/organization")
-    @WebLog
+//    @WebLog
     public ResponseMessage changeUserOrganization(@RequestBody UserOrganizationVO userOrganizationVO,
                                                   HttpServletRequest request) {
         User oldUser = userService.selectByEmail(userOrganizationVO.getEmail());
@@ -193,7 +193,7 @@ public class UserController {
     @DataLog
     @ApiOperation(value = "修改用户权限", tags = {"用户管理"})
     @PutMapping("/authorization")
-    @WebLog
+//    @WebLog
     public ResponseMessage changeUserAuthorization(@RequestBody UserAuthorizationVO userAuthorizationVO,
                                                    HttpServletRequest request) {
         User oldUser = userService.selectByEmail(userAuthorizationVO.getEmail());
@@ -212,7 +212,7 @@ public class UserController {
     @ApiOperation(value = "逻辑删除用户信息", tags = {"用户管理"})
     @DeleteMapping("/{email}")
     @DataLog
-    @WebLog
+//    @WebLog
     public ResponseMessage delete(@PathVariable String email, HttpServletRequest request) {
         // 判断userId是否为null或空字符串
         if (StrUtil.isEmpty(email)) {
@@ -228,7 +228,7 @@ public class UserController {
         userService.updateById(user);
         // 记录修改人之后直接remove
         if (userService.removeById(user.getId())) {
-            return ResponseMessage.successCodeMsgData(2000, "User deleted successfully!", user);
+            return ResponseMessage.successCodeMsgData(2000, String.format("用户{}的账号已删除", user.getRealName()), user);
         } else {
             return ResponseMessage.serverError(email);
         }
@@ -238,7 +238,7 @@ public class UserController {
     @ApiOperation(value = "物理删除用户信息", tags = {"用户管理"})
     @DeleteMapping("/physics/{email}")
     @DataLog
-    @WebLog
+//    @WebLog
     @RequireRoles(RoleEnum.MANAGER)
     public ResponseMessage deletePhysics(@PathVariable String email, HttpServletRequest request) {
         // 判断userId是否为null或空字符串
@@ -255,14 +255,14 @@ public class UserController {
             verifyPermission(request, user);
             Thread thread = new Thread(new UserOperateThread(email, userProofService, userService));
             thread.start();
-            return ResponseMessage.successCodeMsgData(2000, "User deleted successfully!", user);
+            return ResponseMessage.successCodeMsgData(2000, String.format("用户{}的账号已删除", user.getRealName()), user);
         }
     }
 
 
     @ApiOperation(value = "用户登录接口", tags = {"用户管理"})
     @PostMapping("/login")
-    @WebLog
+//    @WebLog
     public ResponseMessage login(HttpServletResponse response, LoginVO loginVO) {
         // 判断请求数据是否为空,包括是否为空字符。
         if (loginVO == null || StrUtil.isEmpty(loginVO.getEmail()) || StrUtil.isEmpty(loginVO.getPassword())) {

@@ -39,7 +39,7 @@ public class ResponseMessage implements Serializable {
      * @return Result
      */
     public static ResponseMessage success(Object data) {
-        return new ResponseMessage(true, 2000, "success", data);
+        return new ResponseMessage(true, 2000, "操作成功！", data);
     }
 
     /**
@@ -48,7 +48,7 @@ public class ResponseMessage implements Serializable {
      * @return Result
      */
     public static ResponseMessage success() {
-        return new ResponseMessage(true, 2000, "success", null);
+        return new ResponseMessage(true, 2000, "操作成功！", null);
     }
 
     /**
@@ -102,7 +102,7 @@ public class ResponseMessage implements Serializable {
      * @return
      */
     public static ResponseMessage serverError(Object data) {
-        return new ResponseMessage(false, 2500, "系统未知错误！请联系管理员。", data);
+        return new ResponseMessage(false, 2500, "系统未知错误，请重启浏览器或与管理员联系。", data);
     }
 
     /**
@@ -111,7 +111,7 @@ public class ResponseMessage implements Serializable {
      * @return
      */
     public static ResponseMessage notFound(Object data) {
-        return new ResponseMessage(false, 2404, "未找到该数据!", data);
+        return new ResponseMessage(false, 2404, "系统未找到该记录，请重启浏览器或与管理员联系。", data);
     }
 
     /**
@@ -129,7 +129,7 @@ public class ResponseMessage implements Serializable {
      * @return
      */
     public static ResponseMessage nullError(Object data) {
-        return new ResponseMessage(false, 2404, "请求数据不可为空!", data);
+        return new ResponseMessage(false, 2404, "请求数据不可为空。", data);
     }
 
     /**
@@ -138,7 +138,7 @@ public class ResponseMessage implements Serializable {
      * @return
      */
     public static ResponseMessage existsError(Object data) {
-        return new ResponseMessage(false, 2500, "当前数据已存在！", data);
+        return new ResponseMessage(false, 2500, "系统未知错误，请重启浏览器或与管理员联系。", data);
     }
 
 

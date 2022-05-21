@@ -40,7 +40,7 @@ public class CommentController {
 
     @GetMapping("/")
     @CrossOrigin
-    @WebLog
+//    @WebLog
     @RequireRoles(RoleEnum.MANAGER)
     @ApiOperation(value = "获取所有反馈信息", tags = {"数据反馈接口"})
     public ResponseMessage getAll(){
@@ -58,7 +58,7 @@ public class CommentController {
 
     @GetMapping("/email")
     @CrossOrigin
-    @WebLog
+//    @WebLog
     @RequireRoles(RoleEnum.MANAGER)
     @ApiOperation(value = "通过Email获取反馈信息", tags = {"数据反馈接口"})
     public ResponseMessage getByEmail(@RequestBody CommentSelectVO commentSelectVO){
@@ -76,19 +76,19 @@ public class CommentController {
     }
     @PostMapping("/")
     @CrossOrigin
-    @WebLog
+//    @WebLog
     @RequireRoles(RoleEnum.VIP)
     @ApiOperation(value = "添加反馈信息", tags = {"数据反馈接口"})
     public ResponseMessage add(@RequestBody CommentAddVO commentAddVO){
         System.out.println(commentAddVO);
         if (BeanUtil.hasNullField(commentAddVO)){
-            throw new MyRuntimeException("评论信息不可为空!", commentAddVO);
+            throw new MyRuntimeException("请您填写评论信息。", commentAddVO);
         }
         Comment comment = commentService.save(commentAddVO);
         if (comment != null) {
             return ResponseMessage.success(comment);
         }else {
-            throw new MyRuntimeException("服务器异常!", commentAddVO);
+            throw new MyRuntimeException("系统未知错误，请重启浏览器或与管理员联系。", commentAddVO);
         }
     }
 /*
@@ -103,7 +103,7 @@ public class CommentController {
  */
     @PutMapping("/isRead")
     @CrossOrigin
-    @WebLog
+//    @WebLog
     @RequireRoles(RoleEnum.MANAGER)
     @ApiOperation(value = "修改反馈信息", tags = {"数据反馈接口"})
     public ResponseMessage update(@RequestBody Integer id){
@@ -112,13 +112,13 @@ public class CommentController {
         }
         Comment comment = commentService.getById(id);
         if (comment == null) {
-            throw new MyRuntimeException("current comment id is not found!");
+            throw new MyRuntimeException("未找到该反馈信息。", id);
         }
         comment.setIsRead(1);
         if (commentService.updateById(comment)) {
             return ResponseMessage.success(id);
         }else {
-            throw new MyRuntimeException("服务器异常!", id);
+            throw new MyRuntimeException("系统未知错误，请重启浏览器或与管理员联系。", id);
         }
     }
 }

@@ -34,14 +34,14 @@ public class UserProofController {
 
     @ApiOperation(value = "获取所有用户的审核资料", tags = {"用户审核"})
     @GetMapping("/")
-    @WebLog
+//    @WebLog
     public ResponseMessage getAll() {
         return ResponseMessage.success(userProofService.list());
     }
 
     @ApiOperation(value = "获取单个审核资料", tags = {"用户审核"})
     @GetMapping("/{userProofId}")
-    @WebLog
+//    @WebLog
     public ResponseMessage getOne(@PathVariable String userProofId) {
         UserProof userProof = userProofService.getById(userProofId);
         return ResponseMessage.success(userProof);
@@ -49,7 +49,7 @@ public class UserProofController {
 
     @ApiOperation(value = "获取单个用户的审核资料", tags = {"用户审核"})
     @GetMapping("/user/{email}")
-    @WebLog
+//    @WebLog
     public ResponseMessage getByUserId(@PathVariable String email) {
 
         User user = userService.selectByEmail(email);
@@ -69,7 +69,7 @@ public class UserProofController {
 
     @ApiOperation(value = "添加用户的审核资料", tags = {"用户审核"})
     @PostMapping("/")
-    @WebLog
+//    @WebLog
     public ResponseMessage add(@RequestBody UserProof userProof) {
         if (userProofService.save(userProof)) {
             return ResponseMessage.success(userProof);
@@ -80,7 +80,7 @@ public class UserProofController {
 
     @ApiOperation(value = "修改用户的审核资料", tags = {"用户审核"})
     @PutMapping("/{userProofId}")
-    @WebLog
+//    @WebLog
     public ResponseMessage update(@PathVariable String userProofId, @RequestBody UserProof userProof) {
         //   暂未实现
         return ResponseMessage.success(userProof);
@@ -88,7 +88,7 @@ public class UserProofController {
 
     @ApiOperation(value = "删除用户的审核资料", tags = {"用户审核"})
     @DeleteMapping("/{userProofId}")
-    @WebLog
+//    @WebLog
     public ResponseMessage delete(@PathVariable String userProofId) {
         userProofService.removeById(userProofId);
         return ResponseMessage.success(userProofId);

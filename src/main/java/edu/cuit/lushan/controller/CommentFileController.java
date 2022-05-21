@@ -43,7 +43,7 @@ public class CommentFileController {
 
     @ApiOperation(value = "获取所有数据反馈信息文件", tags = {"数据反馈文件"})
     @GetMapping("/")
-    @WebLog
+//    @WebLog
     @RequireRoles(RoleEnum.MANAGER)
     @CrossOrigin
     public ResponseMessage getAll() {
@@ -53,16 +53,16 @@ public class CommentFileController {
 
     @ApiOperation(value = "获取单个数据反馈信息的所有文件", tags = {"数据反馈文件"})
     @GetMapping("/commentId/{commentId}")
-    @WebLog
+//    @WebLog
     @RequireRoles(RoleEnum.MANAGER)
     @CrossOrigin
     public ResponseMessage getByCommentId(@PathVariable Integer commentId) {
         if (commentId == null){
-            throw new MyRuntimeException("commentId can not be null!");
+            throw new MyRuntimeException("请求参数不能为空!");
         }
         Comment comment = commentService.getById(commentId);
         if (comment == null) {
-            throw new MyRuntimeException("Current comment not found!");
+            throw new MyRuntimeException("未找到该反馈信息。");
         }
         List<CommentFileVO> result = new LinkedList<>();
         commentFileService.selectByCommentId(comment.getId()).forEach( e-> {
@@ -82,16 +82,16 @@ public class CommentFileController {
 
     @ApiOperation(value = "删除数据反馈信息文件", tags = {"数据反馈文件"})
     @DeleteMapping("/{commentId}")
-    @WebLog
+//    @WebLog
     @RequireRoles(RoleEnum.MANAGER)
     @CrossOrigin
     public ResponseMessage delete(@PathVariable Integer commentId) {
         if (commentId == null){
-            throw new MyRuntimeException("commentId can not be null!");
+            throw new MyRuntimeException("请求参数不能为空!");
         }
         Comment comment = commentService.getById(commentId);
         if (comment == null) {
-            throw new MyRuntimeException("Current comment not found!");
+            throw new MyRuntimeException("未找到该反馈信息。");
         }
         List<CommentFile> commentFileList = commentFileService.selectByCommentId(comment.getId());
         return ResponseMessage.success(commentFileList);

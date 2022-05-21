@@ -22,6 +22,9 @@ public class DownLoadFileThread implements Runnable{
     private String targetFileName;
     private String root;
     private String linkRoot;
+    private String fromDay;
+    private String endDay;
+    private String dataName;
     @Override
     public void run() {
         System.err.println(files.length);
@@ -30,7 +33,7 @@ public class DownLoadFileThread implements Runnable{
         System.err.println("文件存在： " +  zip.getPath());
         String link = String.format("%s/%s", linkRoot, targetFileName);
         try {
-            EmailUtil.sendLinkMail(email, link);
+            EmailUtil.sendDataPackageMail(email, dataName, fromDay, endDay, link);
         } catch (MessagingException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }catch (Exception e){

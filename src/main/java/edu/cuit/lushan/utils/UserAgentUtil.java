@@ -102,11 +102,11 @@ public class UserAgentUtil {
     public void verifyUser(User user) throws RuntimeException {
         if (user != null) {
             if (user.getAccountStatus() == null) {
-                throw new AuthorizationException("The current account is abnormal!");
+                throw new AuthorizationException("您的账号已被冻结，请联系管理员。");
             } else {
             }
         } else {
-            throw new AuthorizationException("The current account is not found!");
+            throw new AuthorizationException("未找到您的账号信息，请联系管理员。");
         }
     }
 

@@ -1,16 +1,12 @@
 package edu.cuit.lushan;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.ZipUtil;
 import edu.cuit.lushan.service.ICurrentDataService;
-import edu.cuit.lushan.thread.DownLoadFileThread;
 import edu.cuit.lushan.utils.EmailUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.mail.MessagingException;
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 
 //import edu.cuit.lushan.utils.LushanRedisUtil;
@@ -98,9 +94,13 @@ class LushanApplicationTests {
 //        System.out.println(device1);
 //    }
     @Test
-    void testEmail() throws UnsupportedEncodingException, MessagingException {
-        EmailUtil.sendHtmlMail("guoheng85@163.com", "账号审核已通过！", "<p>恭喜您！账号注册审核已成功！</p><hr /><ul><li>本邮件为自动发送, 请勿直接回复</li><li>如非本人发起, 请确认账号是否已被他人盗用</li><li>如有其他问题请发送邮件到 <a href=\"mailto:guoheng85@163.com\">guoheng85@163.com</a></li></ul>");
+    void send() throws UnsupportedEncodingException, MessagingException {
+//        EmailUtil.sendDataPackageMail("guoheng85@163.com","数据名称", "2016-10-12","2016-10-24", "106.13.10.209");
+//        EmailUtil.sendChangePasswordEmail("guoheng85@163.com");
+//        EmailUtil.sendRegisterSuccessEmail("guoheng85@163.com");
+        EmailUtil.sendRegisterFailureEmail("guoheng85@163.com", "请正确填写您的单位信息。");
     }
+
 //
 //    @Test
 //    void testCurrentDataService() {

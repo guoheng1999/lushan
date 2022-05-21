@@ -29,7 +29,7 @@ public class DownloadLogController {
     @ApiOperation(value = "获取所有下载日志", tags = {"文件下载日志"})
     @GetMapping("/")
     @DataLog
-    @WebLog
+//    @WebLog
     public ResponseMessage getAll() {
         return ResponseMessage.success(downloadLogService.list());
     }
@@ -37,7 +37,7 @@ public class DownloadLogController {
     @ApiOperation(value = "获取一个下载日志", tags = {"文件下载日志"})
     @GetMapping("/{downloadId}")
     @DataLog
-    @WebLog
+//    @WebLog
     public ResponseMessage getOne(@PathVariable String downloadId) {
         DownloadLog downloadLog = downloadLogService.getById(downloadId);
         return ResponseMessage.success(downloadLog);
@@ -46,7 +46,7 @@ public class DownloadLogController {
     @ApiOperation(value = "添加下载日志", tags = {"文件下载日志"})
     @PostMapping("/")
     @DataLog
-    @WebLog
+//    @WebLog
     public ResponseMessage register(@RequestBody DownloadLog downloadLog) {
         if (downloadLogService.save(downloadLog)) {
             return ResponseMessage.success(downloadLog);
@@ -58,7 +58,7 @@ public class DownloadLogController {
     @ApiOperation(value = "更改下载日志信息", tags = {"文件下载日志"})
     @PutMapping("/{downloadId}")
     @DataLog
-    @WebLog
+//    @WebLog
     public ResponseMessage update(@PathVariable String downloadId, @RequestBody DownloadLog downloadLog) {
         //   暂未实现
         return ResponseMessage.success(downloadLog);
@@ -67,7 +67,7 @@ public class DownloadLogController {
     @ApiOperation(value = "删除下载日志", tags = {"文件下载日志"})
     @DeleteMapping("/{downloadId}")
     @DataLog
-    @WebLog
+//    @WebLog
     public ResponseMessage delete(@PathVariable String downloadId) {
         downloadLogService.removeById(downloadId);
         return ResponseMessage.success(downloadId);

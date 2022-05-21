@@ -45,7 +45,7 @@ public class AuthorizeAspect {
         User user = userService.getById(userId);
         userAgentUtil.verifyUser(user);
         if (!userAgentUtil.hasRole(user, roles.value())) {
-            throw new AuthorizationException(String.format("The current operation requires [%s] or higher privileges.", roles.value().name()), userId);
+            throw new AuthorizationException(String.format("您的权限不能进行该操作，请联系管理员。", roles.value().name()), userId);
         }
     }
 }

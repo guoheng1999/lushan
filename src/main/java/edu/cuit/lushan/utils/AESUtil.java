@@ -162,12 +162,4 @@ public class AESUtil {
         }
         return null;//解密失败返回空
     }
-
-    public static void main(String[] args) {
-        String a = "1236";
-        String s = encodeBase64(a);
-        System.out.println(s);
-        String s1 = decodeBase64(s);
-        System.out.println(s1);
-    }
 }
