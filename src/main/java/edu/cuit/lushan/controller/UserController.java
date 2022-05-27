@@ -250,7 +250,6 @@ public class UserController {
         if (user == null) {
             return ResponseMessage.notFound(email);
         } else {
-
             // 验证是否对当前操作对象有权限
             verifyPermission(request, user);
             Thread thread = new Thread(new UserOperateThread(email, userProofService, userService));

@@ -25,6 +25,7 @@ lushan:
   current-data-root: E:/lushan_server/datasets/currentDatasets
   proof-root: E:/lushan_server/upload/user_proof
   buffer-root: http://10.23.107.96:8848/lushan_front/data/
+  buffer-data-root: E:/lushan_server/download
   secret: "dfc1b985bc618ebbff54d08f3e067bc4" # jwt秘钥
   comment-root: E:/lushan_server/upload/comment
 

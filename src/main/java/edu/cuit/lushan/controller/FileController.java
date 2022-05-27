@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.UUID;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import edu.cuit.lushan.annotation.DataLog;
 import edu.cuit.lushan.annotation.WebLog;
 import edu.cuit.lushan.config.LushanConfig;
@@ -13,6 +14,7 @@ import edu.cuit.lushan.entity.*;
 import edu.cuit.lushan.exception.MyRuntimeException;
 import edu.cuit.lushan.service.*;
 import edu.cuit.lushan.thread.DownLoadFileThread;
+import edu.cuit.lushan.thread.UserOperateThread;
 import edu.cuit.lushan.utils.CodeUtil;
 import edu.cuit.lushan.utils.FileUtils;
 import edu.cuit.lushan.utils.ResponseMessage;
@@ -49,6 +51,8 @@ public class FileController {
     @Autowired
     UserAgentUtil userAgentUtil;
     @Autowired
+    IUserService userService;
+    @Autowired
     LushanConfig lushanConfig;
     @Autowired
     FileUtils fileUtils;
@@ -72,6 +76,17 @@ public class FileController {
     @ApiOperation(value = "用户上传审核资料", tags = {"文件下载上传"})
     public ResponseMessage uploadUserProof(@RequestParam("file") MultipartFile multipartFile, HttpServletRequest request) throws Exception {
         FileVO fileVO = getFileVO(multipartFile, lushanConfig.getProofRoot(), true);
+        if (fileVO == null){
+            Integer userId = userAgentUtil.getUserId(request);
+            System.out.println(userId);
+            User user = userService.getById(userId);
+            System.out.println(user);
+            QueryWrapper wrapper = new QueryWrapper();
+            wrapper.eq("user_id", user.getId());
+            userProofService.remove(wrapper);
+            userService.deleteByEmail(user.getEmail());
+            throw new MyRuntimeException("对不起，文件格式只能为jpg, jpeg, png, pdf！");
+        }
         UserProof userProof = new UserProof();
         userProof.setUserId(userAgentUtil.getUserId(request))
                 .setFileName(fileVO.getFileName())
@@ -392,7 +407,7 @@ public class FileController {
         // requirePicture是确定是否需要判断为图片格式，当其为真时为需要判断，则进入isPicture方法中。
         // 否则表达式为假，跳过判断。
         if (requirePicture && !fileUtils.isPicture(ext) && !fileUtils.isPdf(ext)) {
-            throw new Exception("对不起，文件格式只能为jpg, jpeg, png, pdf！");
+            return null;
         }
         File file = new File(folder, newName + "." + ext);
         multipartFile.transferTo(file);
